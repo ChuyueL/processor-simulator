@@ -4,8 +4,18 @@ int32_t memory[2048];
 int32_t registers[32];
 int32_t pc;
 
+Instruction program[];
+
 int main(int argc, char* argv[]) {
+    string filename;
+    if (argc > 1) {
+        filename = argv[1];
+    }
     return 0;
+}
+
+void parse_program() {
+
 }
 
 int fetch() {

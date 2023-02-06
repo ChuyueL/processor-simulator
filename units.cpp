@@ -1,6 +1,6 @@
 #include "units.h"
 
-int FetchUnit::fetch() {
+int FetchUnit::fetch(Instruction instructions[], int pc) {
 
 }
 
