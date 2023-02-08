@@ -1,20 +1,24 @@
 #include "units.h"
 
-int FetchUnit::fetch(Instruction instructions[], int pc) {
-
+int FetchUnit::fetch(int pc) {
+    return pc+1;
 }
 
-int ExecuteUnit::execute(Instruction instr, int32_t arg1, int32_t arg2, int32_t imm) {
+int ExecuteUnit::execute(Instruction instr, int (&rf)[32], bool &finished) {
     Opcode opcode = instr.opcode;
     int32_t result = 0;
     switch (opcode) {
         case ADD:
-            result = arg1 + arg2;
+            rf[instr.rd] = rf[instr.rs1] + rf[instr.rs2];
             break;
 
         case SUB:
             //
             break;
+        
+        case HALT:
+            finished = true;
+            break;
     }
-    return 0;
+    return result;
 }

@@ -20,7 +20,8 @@ enum Opcode {
     BEQ,
     BLT,
 // J TYPE
-    JAL
+    JAL,
+    HALT
 
 };
 
