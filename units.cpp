@@ -4,20 +4,20 @@ int FetchUnit::fetch(int pc) {
     return pc+1;
 }
 
-int ExecuteUnit::execute(Instruction instr, int (&rf)[32], bool &finished) {
+int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
     Opcode opcode = instr.opcode;
     int32_t result = 0;
     switch (opcode) {
         case ADD:
-            rf[instr.rd] = rf[instr.rs1] + rf[instr.rs2];
+            hw.reg_file[instr.rd] = hw.reg_file[instr.rs1] + hw.reg_file[instr.rs2];
             break;
 
         case SUB:
-            //
+            hw.reg_file[instr.rd] = hw.reg_file[instr.rs1] - hw.reg_file[instr.rs2];
             break;
         
         case HALT:
-            finished = true;
+            hw.finished = true;
             break;
     }
     return result;

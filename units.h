@@ -2,6 +2,20 @@
 #define UNITS_H
 
 #include "instruction.h"
+#include <vector>
+#include <iostream>
+#include <unordered_map>
+#include <string>
+
+struct Hardware {
+    int32_t memory[2048];
+    int32_t reg_file[32];
+    int32_t pc;
+    bool finished;
+
+    std::unordered_map<std::string, int> labels;
+
+};
 
 //fetch next instruction from instr list/array
 class FetchUnit {
@@ -20,7 +34,7 @@ class ExecuteUnit {
 
     public:
 
-    int execute(Instruction instr, int (&rf)[32], bool &finished);
+    int execute(Instruction instr, Hardware &hw);
 
     ExecuteUnit() {}
 
