@@ -8,10 +8,10 @@
 #include <string>
 
 struct Hardware {
-    int32_t memory[2048];
-    int32_t reg_file[32];
+    int32_t memory[2048] = {0};
+    int32_t reg_file[32] = {0};
     int32_t pc;
-    bool finished;
+    bool finished = false;
 
     std::unordered_map<std::string, int> labels;
     std::unordered_map<std::string, int> variable_locations;

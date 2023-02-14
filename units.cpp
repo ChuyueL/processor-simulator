@@ -5,8 +5,20 @@ Instruction FetchUnit::fetch(Hardware hw, std::vector<Instruction> program) {
 }
 
 int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
+    
+    std::cout << "opcode " << std::to_string(instr.opcode);
+    std::cout << "rd " << std::to_string(instr.rd);
+    std::cout << "rs1 " << std::to_string(instr.rs1);
+    std::cout << "rs2 " << std::to_string(instr.rs2);
+    std::cout << "imm " << std::to_string(instr.imm);
+    std::cout << "label " << instr.label;
+    std::cout << std::endl;
+
     std::cout << "REGISTERS" << std::endl;
+    int counter = 0;
     for (int reg : hw.reg_file) {
+        std::cout << static_cast<Register>(counter) << " ";
+        counter++;
         std::cout << reg << " ";
     }
     std::cout << std::endl;
@@ -41,16 +53,17 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
             break;
         
         case SW:
-            hw.memory[instr.rs1 + instr.imm] = instr.rs2;
+            hw.memory[hw.reg_file[instr.rs1] + instr.imm] = hw.reg_file[instr.rs2];
             break;
                 
         case LW:
-            hw.reg_file[instr.rd] = hw.memory[instr.rs1 + instr.imm];
+            hw.reg_file[instr.rd] = hw.memory[hw.reg_file[instr.rs1] + instr.imm];
             break;
 
         case BLT:
             if (hw.reg_file[instr.rs1] < hw.reg_file[instr.rs2]) {
                 hw.pc = hw.labels[instr.label];
+                hw.pc--;
             }
             break;
         

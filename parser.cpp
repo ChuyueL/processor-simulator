@@ -74,10 +74,11 @@ Instruction tokens_to_I_instr(std::vector<std::string> tokens, Hardware hw) {
     int rs1 = register_name_to_int(tokens[2]);
     int imm;
 
-    if (tokens[3][0] == '.') {
+    if (tokens[3][0] != '.') {
         imm = std::stoi(tokens[3], 0, 16);
     }
     else {
+        std::cout << "label " << tokens[3] << std::endl;
         imm = hw.variable_locations[tokens[3]];
     }
 
@@ -215,7 +216,7 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
             program.push_back(new_instr);
             counter++;
         }
-        else if (tokens[0] == "lw") {
+        else if (tokens[0] == "addi" || tokens[0] == "lw") {
             Instruction new_instr = tokens_to_I_instr(tokens, hw);
             program.push_back(new_instr);
             counter++;
@@ -230,7 +231,7 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
             program.push_back(new_instr);
             counter++;
         }
-        else if (tokens[0] == "HALT") {
+        else if (tokens[0] == "halt") {
             Instruction new_instr;
             new_instr.MakeRTypeInstruction(HALT, 0, 0, 0);
             program.push_back(new_instr);

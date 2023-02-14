@@ -19,6 +19,7 @@ int main(int argc, char* argv[]) {
 
     Hardware hw;
     hw.pc = 0;
+    hw.reg_file[0] = 0;
 
     std::string filename = "programs/vectoradd.asm";
 

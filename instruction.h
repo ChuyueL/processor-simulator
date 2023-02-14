@@ -10,13 +10,13 @@ enum Register {
     sp, //2
     gp, //3
     tp, //4
-    fp,
-    t0,
-    t1,
-    t2,
-    t3,
-    t4,
-    t5,
+    fp, //5
+    t0, //6
+    t1, //7
+    t2, //8
+    t3, //9
+    t4, //10
+    t5, //11
     t6,
     t7,
     t8,
@@ -94,29 +94,36 @@ class Instruction {
             rd = _rd;
             rs1 = _rs1;
             rs2 = _rs2;
+            imm = 0;
         }
         void MakeITypeInstruction(Opcode _opcode, int _rd, int _rs1, int32_t _imm) {
             opcode = _opcode;
             rd = _rd;
             rs1 = _rs1;
+            rs2 = 0;
             imm = _imm;
         }
         void MakeSTypeInstruction(Opcode _opcode, int _rs1, int _rs2, int32_t _imm)
         {
             opcode = _opcode;
+            rd = 0;
             rs1 = _rs1;
             rs2 = _rs2;
             imm = _imm;
         }
         void MakeBTypeInstruction(Opcode _opcode, int _rs1, int _rs2, std::string _label) {
             opcode = _opcode;
+            rd = 0;
             rs1 = _rs1;
             rs2 = _rs2;
+            imm = 0;
             label = _label;
         }
         void MakeJTypeInstruction(Opcode _opcode, int _rd, int32_t _imm) {
             opcode = _opcode;
             rd = _rd;
+            rs1 = 0;
+            rs2 = 0;
             imm = _imm;
         }
 
