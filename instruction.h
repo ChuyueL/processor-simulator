@@ -2,6 +2,52 @@
 #define INSTRUCTION_H
 
 #include <stdint.h>
+#include <string>
+
+enum Register {
+    zero, //0
+    ra, //1
+    sp, //2
+    gp, //3
+    tp, //4
+    fp,
+    t0,
+    t1,
+    t2,
+    t3,
+    t4,
+    t5,
+    t6,
+    t7,
+    t8,
+    s0,
+    s1,
+    s2,
+    s3,
+    s4,
+    s5,
+    s6,
+    s7,
+    s8,
+    a0,
+    a1,
+    a2,
+    a3,
+    a4,
+    a5,
+    a6,
+    a7
+
+    //zero - 1
+    //ra - 1
+    //sp - 1
+    //gp - 1
+    //tp - 1
+    //fp - 1
+    //t0-t8 - 9
+    //s0-s8 - 9
+    //a0-a7 - 8
+};
 
 enum Opcode {
 // R TYPE
@@ -25,6 +71,14 @@ enum Opcode {
 
 };
 
+enum InstrType {
+    R,
+    I,
+    S,
+    B,
+    J
+};
+
 class Instruction {
 
     public:
@@ -33,8 +87,38 @@ class Instruction {
         int rs2;
         int rd;
         int32_t imm;
+        std::string label;
 
-        int MakeRTypeInstruction();
+        void MakeRTypeInstruction(Opcode _opcode, int _rd, int _rs1, int _rs2) {
+            opcode = _opcode;
+            rd = _rd;
+            rs1 = _rs1;
+            rs2 = _rs2;
+        }
+        void MakeITypeInstruction(Opcode _opcode, int _rd, int _rs1, int32_t _imm) {
+            opcode = _opcode;
+            rd = _rd;
+            rs1 = _rs1;
+            imm = _imm;
+        }
+        void MakeSTypeInstruction(Opcode _opcode, int _rs1, int _rs2, int32_t _imm)
+        {
+            opcode = _opcode;
+            rs1 = _rs1;
+            rs2 = _rs2;
+            imm = _imm;
+        }
+        void MakeBTypeInstruction(Opcode _opcode, int _rs1, int _rs2, std::string _label) {
+            opcode = _opcode;
+            rs1 = _rs1;
+            rs2 = _rs2;
+            label = _label;
+        }
+        void MakeJTypeInstruction(Opcode _opcode, int _rd, int32_t _imm) {
+            opcode = _opcode;
+            rd = _rd;
+            imm = _imm;
+        }
 
 };
 

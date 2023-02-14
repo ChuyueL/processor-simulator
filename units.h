@@ -14,6 +14,7 @@ struct Hardware {
     bool finished;
 
     std::unordered_map<std::string, int> labels;
+    std::unordered_map<std::string, int> variable_locations;
 
 };
 
@@ -22,7 +23,7 @@ class FetchUnit {
 
     public:
 
-    int fetch(int pc);
+    Instruction fetch(Hardware hw, std::vector<Instruction> program);
 
     FetchUnit() {};
 
