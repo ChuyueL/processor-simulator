@@ -28,10 +28,12 @@ Opcode string_to_opcode(std::string str) {
 
     if (str == "add") opcode = ADD;
     else if (str == "sub") opcode = SUB;
+    else if (str == "slt") opcode = SLT;
     else if (str == "lw") opcode = LW;
     else if (str == "addi") opcode = ADDI;
     else if (str == "sw") opcode = SW;
     else if (str == "blt") opcode = BLT;
+    else if (str == "beq") opcode = BEQ;
     else if (str == "halt") opcode = HALT;
 
     return opcode;
@@ -72,6 +74,7 @@ Instruction tokens_to_I_instr(std::vector<std::string> tokens, Hardware hw) {
 
     int rd = register_name_to_int(tokens[1]);
     int rs1 = register_name_to_int(tokens[2]);
+    std::cout << "tokens[3] " << tokens[3] << std::endl;
     int imm;
 
     if (tokens[3][0] != '.') {
@@ -158,7 +161,7 @@ void parse_data(std::vector<std::string> lines, Hardware &hw) {
         if (tokens[0][0] == '.') {
             if (tokens[0] != ".data:") {
                 processing_data = true;
-                std::string name = tokens[0].substr(0, tokens[0].size()-1);
+                std::string name = tokens[0].substr(0, tokens[0].size());
                 hw.variable_locations.insert({name, next_free_memory});
             }
         }
@@ -180,6 +183,11 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
         std::cout << entry << " ";
     }
     std::cout << std::endl;
+
+    for (auto pair : hw.variable_locations) {
+        std::cout << pair.first << " ";
+        std::cout << pair.second << std::endl;
+    }
 
     for (std::string line : lines) {
         std::cout << line << std::endl;
@@ -206,11 +214,20 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
             std::cout << "skip" << std::endl;
         }
 
-        tokens.erase(std::remove_if(tokens.begin(),
-                                    tokens.end(),
-                                    [](std::string x) {return x == "";}));
+        //remove leading whitespace
+        // size_t string_start = line.find_first_not_of(' ');
 
-        if (tokens[0] == "add" || tokens[0] == "sub") {
+        // if (string_start != std::string::npos) {
+        //     line = line.substr(string_start);
+        // }
+        
+
+
+        // tokens.erase(std::remove_if(tokens.begin(),
+        //                             tokens.end(),
+        //                             [](std::string x) {return x == "";}));
+
+        if (tokens[0] == "add" || tokens[0] == "sub" || tokens[0] == "slt") {
             Instruction new_instr = tokens_to_R_instr(tokens);
             std::cout << "ADDDDDDDD" << std::endl;
             program.push_back(new_instr);
@@ -226,7 +243,7 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
             program.push_back(new_instr);
             counter++;
         }
-        else if (tokens[0] == "blt") {
+        else if (tokens[0] == "blt" || tokens[0] == "beq") {
             Instruction new_instr = tokens_to_B_instr(tokens);
             program.push_back(new_instr);
             counter++;

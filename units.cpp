@@ -47,6 +47,16 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
         case SUB:
             hw.reg_file[instr.rd] = hw.reg_file[instr.rs1] - hw.reg_file[instr.rs2];
             break;
+
+        case SLT:
+            if (hw.reg_file[instr.rs1] < hw.reg_file[instr.rs2]) {
+                hw.reg_file[instr.rd] = 1;
+                std::cout << "less than" << std::endl;
+            }
+            else {
+                hw.reg_file[instr.rd] = 0;
+            }
+            break;
         
         case ADDI:
             hw.reg_file[instr.rd] = hw.reg_file[instr.rs1] + instr.imm;
@@ -67,6 +77,13 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
             }
             break;
         
+        case BEQ:
+            if (hw.reg_file[instr.rs1] == hw.reg_file[instr.rs2]) {
+                hw.pc = hw.labels[instr.label];
+                hw.pc--;
+            }
+            break;
+
         case HALT:
             hw.finished = true;
             break;

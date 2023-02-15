@@ -6,26 +6,26 @@ addi t7 zero .c # store addr of c into t7
 addi t8 zero 0xA #number of loop iterations
 
 for:
-    add t4 t0 t3 #address for array access (base addr of a + offset)
-    lw t5 t4 0 #load a[i]
-    add t4 t1 t3 #adddress for array access for b
-    lw t6 t4 0 #load b[i]
-    add t4 t5 t6 #result for addition of a[i] + b[i]
-    add t5 t7 t3 #memory address for c[i]
-    sw t5 t4 0 #store result into c[i]
-    addi t2 t2 1 #i++
-    addi t3 t3 1 #increase offset by 4 because word size
-    blt t2 t8 for # if (i < 10) go round loop again
-    halt
+add t4 t0 t3 #address for array access (base addr of a + offset)
+lw t5 t4 0 #load a[i]
+add t4 t1 t3 #adddress for array access for b
+lw t6 t4 0 #load b[i]
+add t4 t5 t6 #result for addition of a[i] + b[i]
+add t5 t7 t3 #memory address for c[i]
+sw t5 t4 0 #store result into c[i]
+addi t2 t2 1 #i++
+addi t3 t3 1 #increase offset by 4 because word size
+blt t2 t8 for # if (i < 10) go round loop again
+halt
 
 .data:
 
-.a:
+.a
 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1
 
-.b:
+.b
 0x2 0x2 0x2 0x2 0x2 0x2 0x2 0x2 0x2 0x2
     
 
-.c:
+.c
 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0
