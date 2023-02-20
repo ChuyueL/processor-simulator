@@ -63,8 +63,7 @@ Instruction tokens_to_R_instr(std::vector<std::string> tokens) {
     int rs1 = register_name_to_int(tokens[2]);
     int rs2 = register_name_to_int(tokens[3]);
 
-    Instruction instr;
-    instr.MakeRTypeInstruction(opcode, rd, rs1, rs2);
+    Instruction instr = RTypeInstruction(opcode, rd, rs1, rs2);
 
     return instr;
 }
@@ -85,8 +84,7 @@ Instruction tokens_to_I_instr(std::vector<std::string> tokens, Hardware hw) {
         imm = hw.variable_locations[tokens[3]];
     }
 
-    Instruction instr;
-    instr.MakeITypeInstruction(opcode, rd, rs1, imm);
+    Instruction instr = ITypeInstruction(opcode, rd, rs1, imm);
 
     return instr;
 }
@@ -98,8 +96,7 @@ Instruction tokens_to_S_instr(std::vector<std::string> tokens) {
     int rs2 = register_name_to_int(tokens[2]);
     int imm = std::stoi(tokens[3], 0, 16);
 
-    Instruction instr;
-    instr.MakeSTypeInstruction(opcode, rs1, rs2, imm);
+    Instruction instr = STypeInstruction(opcode, rs1, rs2, imm);
 
     return instr;
 }
@@ -111,8 +108,7 @@ Instruction tokens_to_B_instr(std::vector<std::string> tokens) {
     int rs2 = register_name_to_int(tokens[2]);
     std::string label = tokens[3];
     
-    Instruction instr;
-    instr.MakeBTypeInstruction(opcode, rs1, rs2, label);
+    Instruction instr = BTypeInstruction(opcode, rs1, rs2, label);
 
     return instr;
 }
@@ -249,8 +245,7 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
             counter++;
         }
         else if (tokens[0] == "halt") {
-            Instruction new_instr;
-            new_instr.MakeRTypeInstruction(HALT, 0, 0, 0);
+            Instruction new_instr = RTypeInstruction(HALT, 0, 0, 0);
             program.push_back(new_instr);
             counter++;
         }
