@@ -88,45 +88,6 @@ class Instruction {
         int rd;
         int32_t imm;
         std::string label;
-
-        // void MakeRTypeInstruction(Opcode _opcode, int _rd, int _rs1, int _rs2) {
-        //     opcode = _opcode;
-        //     rd = _rd;
-        //     rs1 = _rs1;
-        //     rs2 = _rs2;
-        //     imm = 0;
-        // }
-        // void MakeITypeInstruction(Opcode _opcode, int _rd, int _rs1, int32_t _imm) {
-        //     opcode = _opcode;
-        //     rd = _rd;
-        //     rs1 = _rs1;
-        //     rs2 = 0;
-        //     imm = _imm;
-        // }
-        // void MakeSTypeInstruction(Opcode _opcode, int _rs1, int _rs2, int32_t _imm)
-        // {
-        //     opcode = _opcode;
-        //     rd = 0;
-        //     rs1 = _rs1;
-        //     rs2 = _rs2;
-        //     imm = _imm;
-        // }
-        // void MakeBTypeInstruction(Opcode _opcode, int _rs1, int _rs2, std::string _label) {
-        //     opcode = _opcode;
-        //     rd = 0;
-        //     rs1 = _rs1;
-        //     rs2 = _rs2;
-        //     imm = 0;
-        //     label = _label;
-        // }
-        // void MakeJTypeInstruction(Opcode _opcode, int _rd, int32_t _imm) {
-        //     opcode = _opcode;
-        //     rd = _rd;
-        //     rs1 = 0;
-        //     rs2 = 0;
-        //     imm = _imm;
-        // }
-
 };
 
 

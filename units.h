@@ -12,28 +12,46 @@ struct Hardware {
     int32_t reg_file[32] = {0};
     int32_t pc;
     bool finished = false;
+    bool reg_updating[32] = {false};
 
     std::unordered_map<std::string, int> labels;
     std::unordered_map<std::string, int> variable_locations;
 
 };
 
+class Unit {
+    public:
+        Instruction current_instruction;
+        Instruction next_instruction;
+        bool stalled = false;
+};
+
 //fetch next instruction from instr list/array
-class FetchUnit {
+class FetchUnit : Unit {
 
     public:
 
-    Instruction fetch(Hardware hw, std::vector<Instruction> program);
+    Instruction fetch(Hardware &hw, std::vector<Instruction> program);
 
     FetchUnit() {};
 
     
 };
 
+class DecodeUnit : Unit {
+    public:
+        Instruction current_instruction;
+        int decode(Instruction instr);
+
+        DecodeUnit() {}
+};
+
 //Execute the instruction, given the arguments
-class ExecuteUnit {
+class ExecuteUnit : Unit {
 
     public:
+
+    Instruction current_instruction;
 
     int execute(Instruction instr, Hardware &hw);
 
@@ -43,7 +61,7 @@ class ExecuteUnit {
 };
 
 //Make changes to ARF
-class WritebackUnit {
+class WritebackUnit : Unit {
 
     public: 
 
@@ -52,6 +70,13 @@ class WritebackUnit {
     WritebackUnit() {
 
     }
+};
+
+class Pipeline {
+    public:
+        FetchUnit fetch_unit;
+        DecodeUnit decode_unit;
+        ExecuteUnit execute_unit;
 };
 
 #endif

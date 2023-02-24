@@ -1,6 +1,8 @@
 #include "units.h"
 
-Instruction FetchUnit::fetch(Hardware hw, std::vector<Instruction> program) {
+Instruction FetchUnit::fetch(Hardware &hw, std::vector<Instruction> program) {
+    hw.pc++;
+    current_instruction = program[hw.pc];
     return program[hw.pc];
 }
 
@@ -37,6 +39,8 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
     }
     std::cout << std::endl;
 
+    current_instruction = instr;
+
     Opcode opcode = instr.opcode;
     int32_t result = 0;
     switch (opcode) {
@@ -51,7 +55,6 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
         case SLT:
             if (hw.reg_file[instr.rs1] < hw.reg_file[instr.rs2]) {
                 hw.reg_file[instr.rd] = 1;
-                std::cout << "less than" << std::endl;
             }
             else {
                 hw.reg_file[instr.rd] = 0;
@@ -89,6 +92,5 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
             break;
     }
 
-    hw.pc++;
     return result;
 }

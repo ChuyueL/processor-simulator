@@ -120,8 +120,6 @@ std::vector<std::string> read_program(std::string filename) {
 
     while (std::getline(file, line)) {
         lines.push_back(line);
-
-        //std::cout << "line " << line << std::endl;
     }
 
     return lines;
@@ -142,7 +140,6 @@ void parse_data(std::vector<std::string> lines, Hardware &hw) {
         }
 
         if (processing_data) {
-            //std::vector<std::string> data_tokens = std::vector<std::string>(tokens.begin() + 1, tokens.end());
             std::cout << "size " << tokens.size() << std::endl;
             for (std::string token : tokens) {
                 std::cout << token << std::endl;
@@ -169,9 +166,6 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
     int counter = 0;
     std::vector<Instruction> program;
 
-    // int next_free_memory = 0;
-    // bool processing_data = false;
-
     parse_data(lines, hw);
 
     std::cout << "memory after data parsing  " << std::endl;
@@ -197,13 +191,6 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
         std::cout << std::endl;
         std::cout << "size" << tokens.size() << std::endl;
 
-        // if (processing_data) {
-        //     for (std::string token : tokens) {
-        //         int data = std::stoi(token, 0, 16);
-        //         hw.memory[next_free_memory] = data;
-        //         next_free_memory++;
-        //     }
-        // }
 
         if (tokens.size() == 0) {
             continue;
@@ -253,57 +240,6 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
             std::string label = line.substr(0, line.size()-1);
             hw.labels.insert({label, counter});
         }
-        // else if (tokens[0][0] == '.') {
-        //     if (tokens[0] != ".data") {
-        //         processing_data = true;
-        //         hw.variable_locations.insert({tokens[0], next_free_memory});
-        //     }
-        // }
-
-
-        // if (line.find("add") != std::string::npos) {
-        //     std::vector<std::string> tokens = tokenise_string(line, ' ');
-        //     int rd = std::stoi(tokens[1]);
-        //     int rs1 = std::stoi(tokens[2]);
-        //     int rs2 = std::stoi(tokens[3]);
-
-        //     Instruction instr;
-        //     instr.MakeRTypeInstruction(ADD, rd, rs1, rs2);
-
-        //     counter++;
-
-
-        // }
-        // else if (line.find("sub") != std::string::npos) {
-        //     std::vector<std::string> tokens = tokenise_string(line, ' ');
-        //     int rd = std::stoi(tokens[1]);
-        //     int rs1 = std::stoi(tokens[2]);
-        //     int rs2 = std::stoi(tokens[3]);
-
-        //     Instruction instr;
-        //     instr.MakeRTypeInstruction(SUB, rd, rs1, rs2);
-        // }
-        // else if (line.find("lw") != std::string::npos) {
-        //     std::vector<std::string> tokens = tokenise_string(line, ' ');
-
-        //     int rd = std::stoi(tokens[1]);
-        //     int rs1 = std::stoi(tokens[2]);
-        //     int imm = std::stoi(tokens[3], 0, 16);
-
-        //     Instruction instr;
-        //     instr.MakeITypeInstruction(LW, rd, rs1, imm);
-        // }
-        // else if (line.find("halt") != std::string::npos) {
-        //     Instruction instr;
-        //     instr.MakeRTypeInstruction(HALT, 0, 0, 0);
-        // }
-        // else if (line.find(":") != std::string::npos) { //label
-        //     std::string label = line.substr(0, line.size()-1);
-        //     hw.labels.insert({label, counter + 1});
-        //     counter--;
-        // } 
-
-        // counter++;
     }
 
     return program;

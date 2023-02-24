@@ -9,10 +9,10 @@
 int main(int argc, char* argv[]) {
 
     Hardware hw;
-    hw.pc = 0;
+    hw.pc = -1;
     hw.reg_file[0] = 0;
 
-    std::string filename = "programs/vectoradd.asm";
+    std::string filename = "programs/gcd.asm";
 
     std::vector<Instruction> program = parse_file(filename, hw);
 
@@ -42,16 +42,6 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-void parse_program() {
+void pipeline_stage() {
 
 }
-
-// int execute(Instruction instr) {
-//     Opcode opcode = instr.opcode;
-//     switch (opcode) {
-//         case (ADD):
-//             instr.rd = instr.rs1 + instr.rs2
-//             break;
-//     }
-//     return 0;
-// }
