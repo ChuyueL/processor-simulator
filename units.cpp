@@ -105,11 +105,11 @@ void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     execute_unit.next_instruction = fetch_unit.fetch(hw, program);
 
     if (execute_unit.current_instruction.opcode == BEQ || execute_unit.current_instruction.opcode == BLT) {
-        flush_pipeline();
+        flush_pipeline(hw);
         execute_unit.execute(execute_unit.current_instruction, hw);
     }
     else if (execute_unit.current_instruction.opcode == HALT) {
-        flush_pipeline();
+        flush_pipeline(hw);
         execute_unit.execute(execute_unit.current_instruction, hw);
     }
     else if (execute_unit.current_instruction.opcode != COUNT) {
@@ -122,7 +122,8 @@ void Pipeline::advance_pipeline() {
     execute_unit.current_instruction = execute_unit.next_instruction;
 }
 
-void Pipeline::flush_pipeline() {
+void Pipeline::flush_pipeline(Hardware &hw) {
     execute_unit.next_instruction = PlaceholderInstruction();
+    hw.pc--;
     //fetch_unit.current_instruction = PlaceholderInstruction();
 }

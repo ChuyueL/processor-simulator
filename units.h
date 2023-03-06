@@ -93,7 +93,7 @@ class Pipeline {
 
         void advance_pipeline();
 
-        void flush_pipeline();
+        void flush_pipeline(Hardware &hw);
 
 };
 
