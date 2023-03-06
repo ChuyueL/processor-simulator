@@ -24,10 +24,11 @@ class Unit {
         Instruction current_instruction;
         Instruction next_instruction;
         bool stalled = false;
+        bool has_instr = false;
 };
 
 //fetch next instruction from instr list/array
-class FetchUnit : Unit {
+class FetchUnit : public Unit {
 
     public:
 
@@ -38,7 +39,7 @@ class FetchUnit : Unit {
     
 };
 
-class DecodeUnit : Unit {
+class DecodeUnit : public Unit {
     public:
         Instruction current_instruction;
         int decode(Instruction instr);
@@ -47,7 +48,7 @@ class DecodeUnit : Unit {
 };
 
 //Execute the instruction, given the arguments
-class ExecuteUnit : Unit {
+class ExecuteUnit : public Unit {
 
     public:
 
@@ -55,7 +56,9 @@ class ExecuteUnit : Unit {
 
     int execute(Instruction instr, Hardware &hw);
 
-    ExecuteUnit() {}
+    ExecuteUnit() {
+        current_instruction = RTypeInstruction(COUNT, 0, 0, 0);
+    }
 
 
 };
@@ -77,6 +80,21 @@ class Pipeline {
         FetchUnit fetch_unit;
         DecodeUnit decode_unit;
         ExecuteUnit execute_unit;
+
+        bool stalled = false;
+
+        Pipeline() {
+            fetch_unit = FetchUnit();
+            decode_unit = DecodeUnit();
+            execute_unit = ExecuteUnit();
+        }
+
+        void clock_cycle(Hardware &hw, std::vector<Instruction> program);
+
+        void advance_pipeline();
+
+        void flush_pipeline();
+
 };
 
 #endif

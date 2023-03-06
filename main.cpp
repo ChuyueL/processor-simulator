@@ -12,19 +12,27 @@ int main(int argc, char* argv[]) {
     hw.pc = -1;
     hw.reg_file[0] = 0;
 
-    std::string filename = "programs/gcd.asm";
+    std::string filename = "programs/vectoradd.asm";
 
     std::vector<Instruction> program = parse_file(filename, hw);
 
     std::cout << program.size() << std::endl;
 
-    FetchUnit fetch_unit;
-    ExecuteUnit execute_unit;
+    // FetchUnit fetch_unit;
+    // ExecuteUnit execute_unit;
   
+    // while (!hw.finished) {
+    //     Instruction instr = fetch_unit.fetch(hw, program);
+    //     execute_unit.execute(instr, hw);
+    // }
+
+    Pipeline pipeline = Pipeline();
+
     while (!hw.finished) {
-        Instruction instr = fetch_unit.fetch(hw, program);
-        execute_unit.execute(instr, hw);
+        pipeline.clock_cycle(hw, program);
+        pipeline.advance_pipeline();
     }
+    
 
 
     for (Instruction instr : program) {

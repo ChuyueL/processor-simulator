@@ -67,7 +67,8 @@ enum Opcode {
     BLT,
 // J TYPE
     JAL,
-    HALT
+    HALT,
+    COUNT //not actually an instruction
 
 };
 
@@ -144,6 +145,17 @@ class JTypeInstruction : public Instruction {
             rs1 = 0;
             rs2 = 0;
             imm = _imm;
+        }
+};
+
+class PlaceholderInstruction : public Instruction {
+    public:
+        PlaceholderInstruction() {
+            opcode = COUNT;
+            rd = 0;
+            rs1 = 0;
+            rs2 = 0;
+            imm = 0;
         }
 };
 

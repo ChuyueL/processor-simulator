@@ -2,8 +2,14 @@
 
 Instruction FetchUnit::fetch(Hardware &hw, std::vector<Instruction> program) {
     hw.pc++;
-    current_instruction = program[hw.pc];
-    return program[hw.pc];
+    if (hw.pc < program.size()) {
+        current_instruction = program[hw.pc];
+    }
+    else {
+        current_instruction = PlaceholderInstruction();
+    }
+
+    return current_instruction;
 }
 
 int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
@@ -39,7 +45,7 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
     }
     std::cout << std::endl;
 
-    current_instruction = instr;
+    //current_instruction = instr;
 
     Opcode opcode = instr.opcode;
     int32_t result = 0;
@@ -93,4 +99,30 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
     }
 
     return result;
+}
+
+void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
+    execute_unit.next_instruction = fetch_unit.fetch(hw, program);
+
+    if (execute_unit.current_instruction.opcode == BEQ || execute_unit.current_instruction.opcode == BLT) {
+        flush_pipeline();
+        execute_unit.execute(execute_unit.current_instruction, hw);
+    }
+    else if (execute_unit.current_instruction.opcode == HALT) {
+        flush_pipeline();
+        execute_unit.execute(execute_unit.current_instruction, hw);
+    }
+    else if (execute_unit.current_instruction.opcode != COUNT) {
+        execute_unit.execute(execute_unit.current_instruction, hw);
+    }
+    
+}
+
+void Pipeline::advance_pipeline() {
+    execute_unit.current_instruction = execute_unit.next_instruction;
+}
+
+void Pipeline::flush_pipeline() {
+    execute_unit.next_instruction = PlaceholderInstruction();
+    //fetch_unit.current_instruction = PlaceholderInstruction();
 }
