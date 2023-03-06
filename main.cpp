@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
     hw.pc = -1;
     hw.reg_file[0] = 0;
 
-    std::string filename = "programs/gcd.asm";
+    std::string filename = "programs/vectoradd.asm";
 
     std::vector<Instruction> program = parse_file(filename, hw);
 
@@ -32,7 +32,6 @@ int main(int argc, char* argv[]) {
         pipeline.clock_cycle(hw, program);
         pipeline.advance_pipeline();
     }
-    
 
 
     for (Instruction instr : program) {
@@ -48,8 +47,4 @@ int main(int argc, char* argv[]) {
     std::cin.ignore();
 
     return 0;
-}
-
-void pipeline_stage() {
-
 }

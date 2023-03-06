@@ -12,6 +12,10 @@ Instruction FetchUnit::fetch(Hardware &hw, std::vector<Instruction> program) {
     return current_instruction;
 }
 
+int DecodeUnit::decode(Instruction instr) {
+
+}
+
 int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
     
     std::cout << "opcode " << std::to_string(instr.opcode);
@@ -102,7 +106,9 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
 }
 
 void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
-    execute_unit.next_instruction = fetch_unit.fetch(hw, program);
+    decode_unit.next_instruction = fetch_unit.fetch(hw, program);
+    //execute_unit.next_instruction = fetch_unit.fetch(hw, program);
+    execute_unit.next_instruction = decode_unit.current_instruction;
 
     if (execute_unit.current_instruction.opcode == BEQ || execute_unit.current_instruction.opcode == BLT) {
         flush_pipeline(hw);
@@ -120,10 +126,12 @@ void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
 
 void Pipeline::advance_pipeline() {
     execute_unit.current_instruction = execute_unit.next_instruction;
+    decode_unit.current_instruction = decode_unit.next_instruction;
 }
 
 void Pipeline::flush_pipeline(Hardware &hw) {
     execute_unit.next_instruction = PlaceholderInstruction();
-    hw.pc--;
-    //fetch_unit.current_instruction = PlaceholderInstruction();
+    decode_unit.current_instruction = PlaceholderInstruction();
+    decode_unit.next_instruction = PlaceholderInstruction();
+    hw.pc -= 2;
 }
