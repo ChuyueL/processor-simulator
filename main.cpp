@@ -9,10 +9,10 @@
 int main(int argc, char* argv[]) {
 
     Hardware hw;
-    hw.pc = -1;
+    hw.pc = 0;
     hw.reg_file[0] = 0;
 
-    std::string filename = "programs/vectoradd.asm";
+    std::string filename = "programs/gcd.asm";
 
     std::vector<Instruction> program = parse_file(filename, hw);
 

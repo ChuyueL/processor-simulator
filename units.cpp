@@ -1,13 +1,15 @@
 #include "units.h"
 
 Instruction FetchUnit::fetch(Hardware &hw, std::vector<Instruction> program) {
-    hw.pc++;
+    //hw.pc++;
     if (hw.pc < program.size()) {
         current_instruction = program[hw.pc];
     }
     else {
         current_instruction = PlaceholderInstruction();
     }
+
+    hw.pc++;
 
     return current_instruction;
 }
@@ -86,14 +88,14 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
         case BLT:
             if (hw.reg_file[instr.rs1] < hw.reg_file[instr.rs2]) {
                 hw.pc = hw.labels[instr.label];
-                hw.pc--;
+                //hw.pc--;
             }
             break;
         
         case BEQ:
             if (hw.reg_file[instr.rs1] == hw.reg_file[instr.rs2]) {
                 hw.pc = hw.labels[instr.label];
-                hw.pc--;
+                //hw.pc--;
             }
             break;
 
@@ -103,6 +105,10 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
     }
 
     return result;
+}
+
+int MemoryUnit::memory_stage() {
+    
 }
 
 void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {

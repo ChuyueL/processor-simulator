@@ -63,6 +63,17 @@ class ExecuteUnit : public Unit {
 
 };
 
+class MemoryUnit : Unit {
+    public:
+        Instruction current_instruction;
+
+        int memory_stage(Instruction instr, Hardware &hw);
+
+        MemoryUnit() {
+            current_instruction = PlaceholderInstruction();
+        }
+};
+
 //Make changes to ARF
 class WritebackUnit : Unit {
 
