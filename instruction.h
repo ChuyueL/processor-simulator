@@ -83,6 +83,7 @@ enum InstrType {
 class Instruction {
 
     public:
+        InstrType type;
         Opcode opcode;
         int rs1;
         int rs2;
@@ -95,6 +96,7 @@ class Instruction {
 class RTypeInstruction : public Instruction {
     public:
         RTypeInstruction(Opcode _opcode, int _rd, int _rs1, int _rs2) {
+            type = R;
             opcode = _opcode;
             rd = _rd;
             rs1 = _rs1;
@@ -106,6 +108,7 @@ class RTypeInstruction : public Instruction {
 class ITypeInstruction : public Instruction {
     public:
         ITypeInstruction(Opcode _opcode, int _rd, int _rs1, int32_t _imm) {
+            type = I;
             opcode = _opcode;
             rd = _rd;
             rs1 = _rs1;
@@ -117,6 +120,7 @@ class ITypeInstruction : public Instruction {
 class STypeInstruction : public Instruction {
     public:
         STypeInstruction(Opcode _opcode, int _rs1, int _rs2, int32_t _imm) {
+            type = S;
             opcode = _opcode;
             rd = 0;
             rs1 = _rs1;
@@ -128,6 +132,7 @@ class STypeInstruction : public Instruction {
 class BTypeInstruction : public Instruction {
     public:
         BTypeInstruction(Opcode _opcode, int _rs1, int _rs2, std::string _label) {
+            type = B;
             opcode = _opcode;
             rd = 0;
             rs1 = _rs1;
@@ -140,6 +145,7 @@ class BTypeInstruction : public Instruction {
 class JTypeInstruction : public Instruction {
     public:
         JTypeInstruction(Opcode _opcode, int _rd, int32_t _imm) {
+            type = B;
             opcode = _opcode;
             rd = _rd;
             rs1 = 0;
@@ -151,6 +157,7 @@ class JTypeInstruction : public Instruction {
 class PlaceholderInstruction : public Instruction {
     public:
         PlaceholderInstruction() {
+            type = R;
             opcode = COUNT;
             rd = 0;
             rs1 = 0;
@@ -158,5 +165,9 @@ class PlaceholderInstruction : public Instruction {
             imm = 0;
         }
 };
+
+std::string opcode_to_string(Opcode opcode);
+
+std::string register_to_string(Register reg);
 
 #endif
