@@ -1,17 +1,21 @@
 #include "units.h"
 
+//fn def
+void print_instruction(Instruction instr);
+void print_cpu_info(Instruction instr, Hardware hw);
+
 Instruction FetchUnit::fetch(Hardware &hw, std::vector<Instruction> program) {
     //hw.pc++;
     if (hw.pc < program.size()) {
-        current_instruction = program[hw.pc];
+        next_instruction = program[hw.pc];
     }
     else {
-        current_instruction = PlaceholderInstruction();
+        next_instruction = PlaceholderInstruction();
     }
 
     hw.pc++;
 
-    return current_instruction;
+    return next_instruction;
 }
 
 void update_scoreboard(Instruction instr, Hardware &hw) {
@@ -67,15 +71,18 @@ bool check_for_dependency(Instruction instr, Hardware &hw) {
             break;
 
     }
+    return false;
 }
 
 bool DecodeUnit::decode(Instruction instr, Hardware &hw) {
     bool has_dependency = check_for_dependency(instr, hw);
 
     if (has_dependency) {
+        current_instruction = PlaceholderInstruction();
         return false;
     }
     else {
+        current_instruction = next_instruction;
         if (instr.opcode != COUNT && instr.opcode != HALT) {
             update_scoreboard(instr, hw);
         }    
@@ -84,41 +91,14 @@ bool DecodeUnit::decode(Instruction instr, Hardware &hw) {
 }
 
 int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
-    
-    std::cout << "opcode " << opcode_to_string(instr.opcode);
-    std::cout << "rd " << std::to_string((Register)instr.rd);
-    std::cout << "rs1 " << register_to_string((Register)instr.rs1);
-    std::cout << "rs2 " << register_to_string((Register)instr.rs2);
-    std::cout << "imm " << std::to_string(instr.imm);
-    std::cout << "label " << instr.label;
-    std::cout << std::endl;
-
-    std::cout << "REGISTERS" << std::endl;
-    int counter = 0;
-    for (int reg : hw.reg_file) {
-        std::cout << static_cast<Register>(counter) << " ";
-        counter++;
-        std::cout << reg << " ";
-    }
-    std::cout << std::endl;
-    std::cout << "MEMORY " << std::endl;
-    for (int entry : hw.memory) {
-        std::cout << entry << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "VARIABLE LOCATIONS " << std::endl;
-
-    for (auto entry : hw.variable_locations) {
-        std::cout << entry.first << " ";
-        std::cout << entry.second << " ";
-
-    }
-    std::cout << std::endl;
+    std::cout << "instruction at EX ";
+    print_instruction(instr);
 
     //current_instruction = instr;
 
     Opcode opcode = instr.opcode;
+
+    result = 0;
     switch (opcode) {
         case ADD:
             result = hw.reg_file[instr.rs1] + hw.reg_file[instr.rs2];            
@@ -140,6 +120,7 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
             break;
         
         case ADDI:
+            std::cout << "ADDI imm=" << instr.imm << "\n";
             result = hw.reg_file[instr.rs1] + instr.imm;
             break;
         
@@ -171,13 +152,19 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
             //hw.finished = true;
             break;
     }
+    std::cout << "alu_output at EX " << result << std::endl;
+
 
     return 0;
 }
 
 int MemoryUnit::memory_stage(Instruction instr, Hardware &hw) {
-    std::cout << "alu_output " << alu_output << std::endl;
+    std::cout << "instruction at MEM ";
+    print_instruction(instr);
+    std::cout << "alu_output at MEM " << alu_output << std::endl;
     Opcode opcode = instr.opcode;
+
+    result = 0;
 
     switch (opcode) {
         case ADD:
@@ -197,6 +184,7 @@ int MemoryUnit::memory_stage(Instruction instr, Hardware &hw) {
             break;
         
         case SW:
+            std::cout << "SW at MEM \n";
             hw.memory[alu_output] = hw.reg_file[instr.rs2];
             break;
                 
@@ -231,6 +219,10 @@ int MemoryUnit::memory_stage(Instruction instr, Hardware &hw) {
 }
 
 int WritebackUnit::writeback(Instruction instr, Hardware &hw) {
+    std::cout << "instruction at WB ";
+    print_instruction(instr);
+    std::cout << "alu_output at WB " << alu_output << std::endl;
+
     Opcode opcode = instr.opcode;
 
     switch (opcode) {
@@ -252,6 +244,7 @@ int WritebackUnit::writeback(Instruction instr, Hardware &hw) {
             break;
         
         case ADDI:
+            std::cout << "ADDI \n";
             hw.reg_file[instr.rd] = alu_output;
             hw.reg_updating[instr.rd] = false;
 
@@ -285,27 +278,57 @@ int WritebackUnit::writeback(Instruction instr, Hardware &hw) {
             hw.finished = true;
             break;
     }
+    print_cpu_info(instr, hw);
     
     return 0;
 }
 
 void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     if (!stalled) {
-        decode_unit.next_instruction = fetch_unit.fetch(hw, program);
+        fetch_unit.fetch(hw, program);
+        //decode_unit.next_instruction = fetch_unit.fetch(hw, program);
+        decode_unit.next_instruction = fetch_unit.current_instruction;
+
+        //decode_unit.decode(decode_unit.current_instruction, hw);
+
+
+        bool cont_pipeline = true;
+
+        if (decode_unit.current_instruction.opcode != COUNT) {
+            cont_pipeline = decode_unit.decode(decode_unit.current_instruction, hw);
+        }
+
+        if (!cont_pipeline) {
+            execute_unit.next_instruction = PlaceholderInstruction();
+            stall_pipeline();
+        }
+        else {
+            execute_unit.next_instruction = decode_unit.current_instruction;
+
+        }
     }
     else {
         decode_unit.next_instruction = PlaceholderInstruction();
+        execute_unit.next_instruction = PlaceholderInstruction();
         std::cout << "stalled" << std::endl;
     }
+
+    writeback_unit.next_instruction = memory_unit.current_instruction;
+    writeback_unit.alu_output = memory_unit.alu_output;
+    writeback_unit.load_mem_data = memory_unit.result;
+
+        
+    memory_unit.alu_output = execute_unit.result;
+
+
+    memory_unit.next_instruction = execute_unit.current_instruction;
+
     //execute_unit.next_instruction = fetch_unit.fetch(hw, program);
-    execute_unit.next_instruction = decode_unit.current_instruction;
 
     if (execute_unit.current_instruction.opcode != COUNT) {
         execute_unit.execute(execute_unit.current_instruction, hw);
     }
 
-    memory_unit.next_instruction = execute_unit.current_instruction;
-    memory_unit.alu_output = execute_unit.result;
 
     if (memory_unit.current_instruction.opcode == BEQ || memory_unit.current_instruction.opcode == BLT) { ///move to MEM
         flush_pipeline(hw, 3);
@@ -314,10 +337,6 @@ void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     else if (memory_unit.current_instruction.opcode != COUNT) {
         memory_unit.memory_stage(memory_unit.current_instruction, hw);
     }
-
-    writeback_unit.next_instruction = memory_unit.current_instruction;
-    writeback_unit.alu_output = memory_unit.alu_output;
-    writeback_unit.load_mem_data = memory_unit.result;
 
     if (writeback_unit.current_instruction.opcode == HALT) {
         flush_pipeline(hw, 4);
@@ -342,11 +361,14 @@ void Pipeline::advance_pipeline() {
     memory_unit.current_instruction = memory_unit.next_instruction;
     execute_unit.current_instruction = execute_unit.next_instruction;
     decode_unit.current_instruction = decode_unit.next_instruction;
+    fetch_unit.current_instruction = fetch_unit.next_instruction;
 }
 
 void Pipeline::flush_pipeline(Hardware &hw, int stages) {
-    writeback_unit.next_instruction = PlaceholderInstruction();
+    memory_unit.next_instruction = PlaceholderInstruction();
+    //memory_unit.alu_output = 0;
     execute_unit.next_instruction = PlaceholderInstruction();
+    execute_unit.result = 0;
     execute_unit.current_instruction = PlaceholderInstruction();
     decode_unit.current_instruction = PlaceholderInstruction();
     decode_unit.next_instruction = PlaceholderInstruction();
@@ -367,4 +389,43 @@ void Pipeline::continue_pipeline() {
     execute_unit.stalled = false;
     memory_unit.stalled = false;
     stalled = false;
+
+    // execute_unit.next_instruction = decode_unit.current_instruction;
+    // decode_unit.next_instruction = fetch_unit.current_instruction;
+}
+
+void print_instruction(Instruction instr) {
+    std::cout << "opcode=" << opcode_to_string(instr.opcode);
+    std::cout << " rd=" << register_to_string((Register)instr.rd);
+    std::cout << " rs1=" << register_to_string((Register)instr.rs1);
+    std::cout << " rs2=" << register_to_string((Register)instr.rs2);
+    std::cout << " imm=" << std::to_string(instr.imm);
+    std::cout << " label=" << instr.label;
+    std::cout << std::endl;
+}
+
+void print_cpu_info(Instruction instr, Hardware hw) {
+
+    std::cout << "REGISTERS" << std::endl;
+    int counter = 0;
+    for (int reg : hw.reg_file) {
+        std::cout << register_to_string(static_cast<Register>(counter)) << "=";
+        counter++;
+        std::cout << reg << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "MEMORY " << std::endl;
+    for (int entry : hw.memory) {
+        std::cout << entry << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "VARIABLE LOCATIONS " << std::endl;
+
+    for (auto entry : hw.variable_locations) {
+        std::cout << entry.first << " ";
+        std::cout << entry.second << " ";
+
+    }
+    std::cout << std::endl;
 }

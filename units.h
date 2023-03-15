@@ -34,7 +34,9 @@ class FetchUnit : public Unit {
 
     Instruction fetch(Hardware &hw, std::vector<Instruction> program);
 
-    FetchUnit() {};
+    FetchUnit() {
+        current_instruction = PlaceholderInstruction();
+    };
 
     
 };
