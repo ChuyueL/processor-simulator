@@ -36,6 +36,7 @@ class FetchUnit : public Unit {
 
     FetchUnit() {
         current_instruction = PlaceholderInstruction();
+        next_instruction = PlaceholderInstruction();
     };
 
     
@@ -47,6 +48,7 @@ class DecodeUnit : public Unit {
 
         DecodeUnit() {
             current_instruction = PlaceholderInstruction();
+            next_instruction = PlaceholderInstruction();
         }
 };
 
@@ -59,7 +61,8 @@ class ExecuteUnit : public Unit {
     int execute(Instruction instr, Hardware &hw);
 
     ExecuteUnit() {
-        current_instruction = RTypeInstruction(COUNT, 0, 0, 0);
+        current_instruction = PlaceholderInstruction();
+        next_instruction = PlaceholderInstruction();
     }
 
 
@@ -74,6 +77,7 @@ class MemoryUnit : public Unit {
 
         MemoryUnit() {
             current_instruction = PlaceholderInstruction();
+            next_instruction = PlaceholderInstruction();
         }
 };
 
@@ -88,6 +92,7 @@ class WritebackUnit : public Unit {
 
     WritebackUnit() {
         current_instruction = PlaceholderInstruction();
+        next_instruction = PlaceholderInstruction();
     }
 };
 
@@ -111,7 +116,7 @@ class Pipeline {
 
         void clock_cycle(Hardware &hw, std::vector<Instruction> program);
 
-        void advance_pipeline();
+        void advance_pipeline(Hardware &hw);
 
         void flush_pipeline(Hardware &hw, int number);
 

@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 
     while (!hw.finished) {
         pipeline.clock_cycle(hw, program);
-        pipeline.advance_pipeline();
+        pipeline.advance_pipeline(hw);
     }
 
 

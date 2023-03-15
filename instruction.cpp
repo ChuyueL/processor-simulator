@@ -11,7 +11,8 @@ std::unordered_map<Opcode, std::string> opcode_table = {
     {SW, "sw"},
     {BEQ, "beq"},
     {BLT, "blt"},
-    {HALT, "halt"}
+    {HALT, "halt"},
+    {COUNT, "nop"}
 };
 
 std::unordered_map<Register, std::string> register_table = {
