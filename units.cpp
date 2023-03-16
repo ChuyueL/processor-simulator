@@ -11,13 +11,15 @@ Instruction FetchUnit::fetch(Hardware &hw, std::vector<Instruction> program) {
         current_instruction = program[hw.pc];
         std::cout << "FETCHed instr \n";
         print_instruction(current_instruction);
-        hw.pc++;
+        
         std::cout << "pc=" << hw.pc << std::endl;
 
     }
     else {
         //current_instruction = PlaceholderInstruction();
     }
+
+    hw.pc++;
 
 
     return current_instruction;
@@ -274,7 +276,7 @@ int MemoryUnit::memory_stage(Instruction instr, Hardware &hw) {
                 hw.pc = hw.labels[instr.label];
                 //hw.pc--;
             }
-            hw.finished = true;
+            //hw.finished = true;
             break;
         
         case BEQ:
@@ -282,7 +284,7 @@ int MemoryUnit::memory_stage(Instruction instr, Hardware &hw) {
                 hw.pc = hw.labels[instr.label];
                 //hw.pc--;
             }
-            hw.finished = true;
+            //hw.finished = true;
             break;
 
         case HALT:
@@ -467,16 +469,18 @@ void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
 
 
     if (memory_unit.current_instruction.opcode == BEQ || memory_unit.current_instruction.opcode == BLT) { ///move to MEM
-        memory_unit.memory_stage(memory_unit.current_instruction, hw);
         flush_pipeline(hw, 3);
+
+        memory_unit.memory_stage(memory_unit.current_instruction, hw);
     }
     else {
         memory_unit.memory_stage(memory_unit.current_instruction, hw);
     }
 
     if (writeback_unit.current_instruction.opcode == HALT) {
-        writeback_unit.writeback(writeback_unit.current_instruction, hw);
         flush_pipeline(hw, 4);
+
+        writeback_unit.writeback(writeback_unit.current_instruction, hw);
 
     }
     else {
@@ -578,7 +582,7 @@ void Pipeline::flush_pipeline(Hardware &hw, int stages) {
     fetch_unit.current_instruction = PlaceholderInstruction();
 
     ////////////CHANGE//////////
-    //hw.pc -= stages;
+    hw.pc -= stages;
     //hw.pc++;
 }
 
