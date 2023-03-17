@@ -30,10 +30,15 @@ void update_scoreboard(Instruction instr, Hardware &hw) {
 
     switch (instr_type) {
         case R:
-            hw.reg_updating[instr.rd] = true;
+            if (instr.rd != instr.rs1 && instr.rd != instr.rs2) {
+                hw.reg_updating[instr.rd] = true;
+            }
             break;
         case I:
-            hw.reg_updating[instr.rd] = true;
+            if (instr.rd != instr.rs1) {
+                hw.reg_updating[instr.rd] = true;
+            }
+            
             break;
         case S:
             
