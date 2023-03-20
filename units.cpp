@@ -25,19 +25,27 @@ Instruction FetchUnit::fetch(Hardware &hw, std::vector<Instruction> program) {
     return current_instruction;
 }
 
-void update_scoreboard(Instruction instr, Hardware &hw) {
+void update_scoreboard_for_instr(Instruction instr, Hardware &hw) {
     InstrType instr_type = instr.type;
+
+    if (instr.opcode == COUNT || instr.opcode == HALT) {
+        return;
+    }
 
     switch (instr_type) {
         case R:
-            if (instr.rd != instr.rs1 && instr.rd != instr.rs2) {
-                hw.reg_updating[instr.rd] = true;
-            }
+            // if (instr.rd != instr.rs1 && instr.rd != instr.rs2) {
+            //     hw.reg_updating[instr.rd] = true;
+            // }
+
+            hw.reg_updating[instr.rd] = true;
             break;
         case I:
-            if (instr.rd != instr.rs1) {
-                hw.reg_updating[instr.rd] = true;
-            }
+            // if (instr.rd != instr.rs1) {
+            //     hw.reg_updating[instr.rd] = true;
+            // }
+
+            hw.reg_updating[instr.rd] = true;
             
             break;
         case S:
@@ -140,9 +148,9 @@ bool DecodeUnit::decode(Instruction instr, Hardware &hw) {
     }
     else {
         //current_instruction = next_instruction;
-        if (instr.opcode != COUNT && instr.opcode != HALT) {
-            update_scoreboard(instr, hw);
-        }    
+        // if (instr.opcode != COUNT && instr.opcode != HALT) {
+        //     update_scoreboard(instr, hw);
+        // }    
     }
     return true;
 }
@@ -153,9 +161,9 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
     //     print_instruction(instr);
     // }
 
-    if (instr.opcode != COUNT && instr.opcode != HALT) {
-        update_scoreboard(instr, hw);
-    }  
+    // if (instr.opcode != COUNT && instr.opcode != HALT) {
+    //     update_scoreboard(instr, hw);
+    // }  
     
     std::cout << "instruction at EX ";
     print_instruction(instr);
@@ -201,17 +209,17 @@ int ExecuteUnit::execute(Instruction instr, Hardware &hw) {
             break;
 
         case BLT:
-            // if (hw.reg_file[instr.rs1] < hw.reg_file[instr.rs2]) {
-            //     hw.pc = hw.labels[instr.label];
-            //     //hw.pc--;
-            // }
+            if (hw.reg_file[instr.rs1] < hw.reg_file[instr.rs2]) {
+                hw.pc = hw.labels[instr.label];
+                //hw.pc--;
+            }
             break;
         
         case BEQ:
-            // if (hw.reg_file[instr.rs1] == hw.reg_file[instr.rs2]) {
-            //     hw.pc = hw.labels[instr.label];
-            //     //hw.pc--;
-            // }
+            if (hw.reg_file[instr.rs1] == hw.reg_file[instr.rs2]) {
+                hw.pc = hw.labels[instr.label];
+                //hw.pc--;
+            }
             break;
 
         case HALT:
@@ -237,9 +245,9 @@ int MemoryUnit::memory_stage(Instruction instr, Hardware &hw) {
     //     print_instruction(instr);
     //     std::cout << "alu_output at MEM " << alu_output << std::endl;
     // }
-    if (instr.opcode != COUNT && instr.opcode != HALT) {
-        update_scoreboard(instr, hw);
-    }  
+    // if (instr.opcode != COUNT && instr.opcode != HALT) {
+    //     update_scoreboard(instr, hw);
+    // }  
 
     std::cout << "instruction at MEM ";
     print_instruction(instr);
@@ -276,19 +284,19 @@ int MemoryUnit::memory_stage(Instruction instr, Hardware &hw) {
             break;
 
         case BLT:
-            std::cout << "BLT" << std::endl;
-            if (hw.reg_file[instr.rs1] < hw.reg_file[instr.rs2]) {
-                hw.pc = hw.labels[instr.label];
-                //hw.pc--;
-            }
+            // std::cout << "BLT" << std::endl;
+            // if (hw.reg_file[instr.rs1] < hw.reg_file[instr.rs2]) {
+            //     hw.pc = hw.labels[instr.label];
+            //     //hw.pc--;
+            // }
             //hw.finished = true;
             break;
         
         case BEQ:
-            if (hw.reg_file[instr.rs1] == hw.reg_file[instr.rs2]) {
-                hw.pc = hw.labels[instr.label];
-                //hw.pc--;
-            }
+            // if (hw.reg_file[instr.rs1] == hw.reg_file[instr.rs2]) {
+            //     hw.pc = hw.labels[instr.label];
+            //     //hw.pc--;
+            // }
             //hw.finished = true;
             break;
 
@@ -311,14 +319,13 @@ int WritebackUnit::writeback(Instruction instr, Hardware &hw) {
     //     std::cout << "alu_output at WB " << alu_output << std::endl;
     // }
 
-    if (instr.opcode != COUNT && instr.opcode != HALT) {
-        update_scoreboard(instr, hw);
-    }  
+    // if (instr.opcode != COUNT && instr.opcode != HALT) {
+    //     update_scoreboard(instr, hw);
+    // }  
     std::cout << "instruction at WB ";
     print_instruction(instr);
     std::cout << "alu_output at WB " << alu_output << "\n" << std::endl;
     
-
     Opcode opcode = instr.opcode;
 
     switch (opcode) {
@@ -470,16 +477,32 @@ void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
         std::cout << "STALLED" << std::endl;
     }
 
-    execute_unit.execute(execute_unit.current_instruction, hw);
+    if (execute_unit.current_instruction.opcode == BEQ || execute_unit.current_instruction.opcode == BLT) {
+        flush_pipeline(hw, 2);
+        execute_unit.execute(execute_unit.current_instruction, hw);      
 
-
-    if (memory_unit.current_instruction.opcode == BEQ || memory_unit.current_instruction.opcode == BLT) { ///move to MEM
-        flush_pipeline(hw, 3);
-
-        memory_unit.memory_stage(memory_unit.current_instruction, hw);
     }
     else {
-        memory_unit.memory_stage(memory_unit.current_instruction, hw);
+        execute_unit.execute(execute_unit.current_instruction, hw);      
+    }
+
+    //execute_unit.execute(execute_unit.current_instruction, hw);      
+
+
+
+    // if (memory_unit.current_instruction.opcode == BEQ || memory_unit.current_instruction.opcode == BLT) { ///move to MEM
+    //     flush_pipeline(hw, 3);
+
+    //     memory_unit.memory_stage(memory_unit.current_instruction, hw);
+    // }
+    // else {
+    //     memory_unit.memory_stage(memory_unit.current_instruction, hw);
+    // }
+
+    memory_unit.memory_stage(memory_unit.current_instruction, hw);
+
+    if (writeback_unit.current_instruction.opcode != COUNT) {
+        instructions_executed++;
     }
 
     if (writeback_unit.current_instruction.opcode == HALT) {
@@ -555,21 +578,23 @@ void Pipeline::advance_pipeline(Hardware &hw) {
         //decode_unit.current_instruction = PlaceholderInstruction();
     }
     
-    Instruction instr = execute_unit.current_instruction;
-    if (instr.opcode != COUNT && instr.opcode != HALT) {
-        update_scoreboard(instr, hw);
-    }
+    // Instruction instr = execute_unit.current_instruction;
+    // if (instr.opcode != COUNT && instr.opcode != HALT) {
+    //     update_scoreboard(instr, hw);
+    // }
 
-    instr = memory_unit.current_instruction;
-    if (instr.opcode != COUNT && instr.opcode != HALT) {
-        update_scoreboard(instr, hw);
-    }
+    // instr = memory_unit.current_instruction;
+    // if (instr.opcode != COUNT && instr.opcode != HALT) {
+    //     update_scoreboard(instr, hw);
+    // }
 
-    instr = writeback_unit.current_instruction;
+    // instr = writeback_unit.current_instruction;
 
-    if (instr.opcode != COUNT && instr.opcode != HALT) {
-        update_scoreboard(instr, hw);
-    }
+    // if (instr.opcode != COUNT && instr.opcode != HALT) {
+    //     update_scoreboard(instr, hw);
+    // }
+
+    update_scoreboard(hw);
   
 
 }
@@ -579,8 +604,11 @@ void Pipeline::flush_pipeline(Hardware &hw, int stages) {
     //memory_unit.next_instruction = PlaceholderInstruction();
     //memory_unit.alu_output = 0;
     //execute_unit.next_instruction = PlaceholderInstruction();
-    execute_unit.result = 0;
-    execute_unit.current_instruction = PlaceholderInstruction();
+    if (stages > 2) {
+        execute_unit.result = 0;
+        execute_unit.current_instruction = PlaceholderInstruction();
+    }
+    
     decode_unit.current_instruction = PlaceholderInstruction();
     //decode_unit.next_instruction = PlaceholderInstruction();
     //fetch_unit.next_instruction = PlaceholderInstruction();
@@ -606,6 +634,12 @@ void Pipeline::continue_pipeline() {
 
     // execute_unit.next_instruction = decode_unit.current_instruction;
     // decode_unit.next_instruction = fetch_unit.current_instruction;
+}
+
+void Pipeline::update_scoreboard(Hardware &hw) {
+    update_scoreboard_for_instr(execute_unit.current_instruction, hw);
+    update_scoreboard_for_instr(memory_unit.current_instruction, hw);
+    update_scoreboard_for_instr(writeback_unit.current_instruction, hw);
 }
 
 void print_instruction(Instruction instr) {

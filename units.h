@@ -106,6 +106,8 @@ class Pipeline {
 
         bool stalled = false;
 
+        int instructions_executed = 0;
+
         Pipeline() {
             fetch_unit = FetchUnit();
             decode_unit = DecodeUnit();
@@ -123,6 +125,8 @@ class Pipeline {
         void stall_pipeline();
 
         void continue_pipeline();
+
+        void update_scoreboard(Hardware &hw);
 
 };
 
