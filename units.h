@@ -2,22 +2,12 @@
 #define UNITS_H
 
 #include "instruction.h"
+#include "hardware.h"
 #include <vector>
 #include <iostream>
 #include <unordered_map>
 #include <string>
 
-struct Hardware {
-    int32_t memory[2048] = {0};
-    int32_t reg_file[32] = {0};
-    int32_t pc;
-    bool finished = false;
-    bool reg_updating[32] = {false};
-
-    std::unordered_map<std::string, int> labels;
-    std::unordered_map<std::string, int> variable_locations;
-
-};
 
 class Unit {
     public:

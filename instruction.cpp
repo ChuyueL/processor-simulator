@@ -50,6 +50,19 @@ std::unordered_map<Register, std::string> register_table = {
     {a7, "a7"}
 };
 
+std::unordered_map<Opcode, FUType> required_FU = {
+    {ADD, ARITH},
+    {SUB, ARITH},
+    {SLT, ARITH},
+    {ADDI, ARITH},
+    {LW, LOADSTORE},
+    {SW, LOADSTORE},
+    {BEQ, BRANCH},
+    {BLT, BRANCH},
+    {HALT, ARITH},
+    {COUNT, ARITH}
+};
+
 std::string opcode_to_string(Opcode opcode) {
     return opcode_table[opcode];
 }
@@ -63,4 +76,8 @@ std::string opcode_to_string(Opcode opcode) {
 
 std::string register_to_string(Register reg) {
     return register_table[reg];
+}
+
+FUType opcode_required_FU(Opcode opcode) {
+    return required_FU[opcode];
 }

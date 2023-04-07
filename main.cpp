@@ -1,6 +1,7 @@
 #include "instruction.h"
 #include "units.h"
 #include "parser.h"
+#include "tomasulo.h"
 #include <vector>
 #include <iostream>
 #include <iomanip>
@@ -9,11 +10,11 @@
 
 int main(int argc, char* argv[]) {
 
-    Hardware hw;
+    Hardware hw = Hardware();
     hw.pc = 0;
     hw.reg_file[0] = 0;
 
-    std::string filename = "programs/vectoradd.asm";
+    std::string filename = "test_programs/add.asm";
 
     std::vector<Instruction> program = parse_file(filename, hw);
 
@@ -48,14 +49,21 @@ int main(int argc, char* argv[]) {
 
     // }
 
-    int num_cycles = 0;
+    // int num_cycles = 0;
 
-    Pipeline pipeline = Pipeline();
+    // Pipeline pipeline = Pipeline();
+
+    // while (!hw.finished) {
+    //     pipeline.clock_cycle(hw, program);
+    //     pipeline.advance_pipeline(hw);
+    //     num_cycles++;
+    // }
+
+    OoOPipeline pipeline = OoOPipeline();
 
     while (!hw.finished) {
         pipeline.clock_cycle(hw, program);
         pipeline.advance_pipeline(hw);
-        num_cycles++;
     }
 
 
@@ -69,11 +77,11 @@ int main(int argc, char* argv[]) {
         std::cout << std::endl;
     }
 
-    std::cout << "total cycles=" << num_cycles << std::endl;
+    //std::cout << "total cycles=" << num_cycles << std::endl;
     
-    std::cout << "total instrs executed=" << pipeline.instructions_executed << std::endl;
+    //std::cout << "total instrs executed=" << pipeline.instructions_executed << std::endl;
 
-    std::cout << std::setprecision(2) << std::fixed << "IPC=" << (float)pipeline.instructions_executed / (float)num_cycles << std::endl;
+    //std::cout << std::setprecision(2) << std::fixed << "IPC=" << (float)pipeline.instructions_executed / (float)num_cycles << std::endl;
 
     //std::cin.ignore();
 

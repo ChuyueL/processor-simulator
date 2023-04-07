@@ -1,6 +1,7 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
+#include "tag.h"
 #include <stdint.h>
 #include <string>
 
@@ -90,6 +91,7 @@ class Instruction {
         int rd;
         int32_t imm;
         std::string label;
+        int result = 0;
 };
 
 
@@ -169,5 +171,7 @@ class PlaceholderInstruction : public Instruction {
 std::string opcode_to_string(Opcode opcode);
 
 std::string register_to_string(Register reg);
+
+FUType opcode_required_FU(Opcode opcode);
 
 #endif
