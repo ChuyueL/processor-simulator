@@ -22,6 +22,7 @@ class ReservationStation {
     int imm;
     int address;
     bool busy = false;
+    bool executing = false;
 
     ReservationStation(FUType _FU_type, int _number) {
         FU_type = _FU_type;

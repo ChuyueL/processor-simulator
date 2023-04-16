@@ -8,6 +8,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <string>
+#include <queue>
 
 #define NUM_RS 10
 
@@ -15,6 +16,10 @@ class IssueUnit : public Unit {
     public:
 
     void issue_instruction(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations);
+
+    IssueUnit() {
+        current_instruction = PlaceholderInstruction();
+    }
 };
 
 class FunctionalUnit : public Unit {
@@ -65,7 +70,7 @@ class BranchUnit : public FunctionalUnit {
 class WriteUnit : public Unit {
     public:
 
-    std::vector<ReservationStation> completed_instr_res_stns;
+    std::queue<ReservationStation> completed_instr_res_stns;
     void write_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations);
 };
 
