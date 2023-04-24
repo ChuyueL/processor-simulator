@@ -13,10 +13,11 @@ class ReservationStation {
     public:
 
     int number; 
+    int ROB_entry = -1;
     Instruction instr = PlaceholderInstruction();
     FUType FU_type;
-    Tag tag1 = PlaceholderTag();
-    Tag tag2 = PlaceholderTag();
+    int tag1 = -1;
+    int tag2 = -1;
     int value1;
     int value2;
     int imm;

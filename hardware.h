@@ -14,7 +14,7 @@ class Hardware {
     bool finished = false;
     bool reg_updating[32] = {false};
     //Tag register_alias_table[32] = {PlaceholderTag()};
-    std::vector<Tag> register_alias_table;
+    std::vector<int> register_alias_table;
     bool valid[32] = {true};
 
     std::unordered_map<std::string, int> labels;
@@ -22,7 +22,7 @@ class Hardware {
 
     Hardware() {
         for (int i = 0; i < 31; i++) {
-            register_alias_table.push_back(PlaceholderTag());
+            register_alias_table.push_back(-1);
         }
     }
 

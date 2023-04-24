@@ -4,6 +4,7 @@
 #include "instruction.h"
 #include "units.h"
 #include "reservation_station.h"
+#include "reorder_buffer.h"
 #include <vector>
 #include <iostream>
 #include <unordered_map>
@@ -15,7 +16,9 @@
 class IssueUnit : public Unit {
     public:
 
-    void issue_instruction(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations);
+    bool stalled = false;
+
+    void issue_instruction(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);
 
     IssueUnit() {
         current_instruction = PlaceholderInstruction();
@@ -48,7 +51,8 @@ class ALU : public FunctionalUnit {
 class LDSTUnit : public FunctionalUnit {
     public: 
 
-    void execute(Opcode op, int rd, int val1, int val2, int imm);
+    void perform_memory_operation(Hardware &hw, Opcode op, int val1, int val2, int imm);
+    void execute(Hardware &hw);
 
     LDSTUnit() {
         type = LOADSTORE;
@@ -71,7 +75,13 @@ class WriteUnit : public Unit {
     public:
 
     std::queue<ReservationStation> completed_instr_res_stns;
-    void write_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations);
+    void write_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);
+};
+
+class CommitUnit : public Unit {
+    public:
+
+        void commit_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);
 };
 
 //out of order pipeline
@@ -89,8 +99,16 @@ class OoOPipeline {
         std::vector<BranchUnit> branch_units;
 
         std::unordered_map<FUType, std::vector<ReservationStation>> all_reservation_stations;
+        
+        //std::queue<> load_queue;
+
+        ReorderBuffer ROB;
+
+        
 
         WriteUnit write_unit;
+
+        CommitUnit commit_unit;
 
         OoOPipeline() {
             fetch_unit = FetchUnit();
@@ -107,6 +125,8 @@ class OoOPipeline {
     
 
             write_unit = WriteUnit();
+
+            commit_unit = CommitUnit();
 
         }
 

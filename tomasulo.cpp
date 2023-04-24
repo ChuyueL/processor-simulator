@@ -1,6 +1,7 @@
 #include "tomasulo.h"
 #include "tag.h"
 #include "util.h"
+#include "reorder_buffer.h"
 
 
 void FunctionalUnit::find_instruction_to_execute(std::vector<ReservationStation> reservation_stations) {
@@ -10,7 +11,7 @@ void FunctionalUnit::find_instruction_to_execute(std::vector<ReservationStation>
 
     for (ReservationStation& res_stn : reservation_stations) {
         if (res_stn.busy && !res_stn.executing) {
-            if (res_stn.tag1.FU_type == NONE && res_stn.tag2.FU_type == NONE) {
+            if (res_stn.tag1 == -1 && res_stn.tag2 == -1) {
                 if (res_stn.instr.opcode == HALT) {
                     halt_instr_exists = true;
                     halt_instr_RS = res_stn;
@@ -58,15 +59,21 @@ void FunctionalUnit::find_instruction_to_execute(std::vector<ReservationStation>
     
 }
 
-void update_RAT(Hardware &hw, int reg, Tag tag) {
+void update_RAT(Hardware &hw, int reg, int rob_index) {
     if (reg == 0) {
         return;
     }
     hw.valid[reg] = false;
-    hw.register_alias_table[reg] = tag;
+    hw.register_alias_table[reg] = rob_index;
 }
 
-void IssueUnit::issue_instruction(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations) {
+int allocate_rob_entry(ReorderBuffer &ROB) {
+    ROBEntry newEntry = PlaceholderROBEntry();
+    int index = ROB.push(newEntry);
+    return index;
+}
+
+void IssueUnit::issue_instruction(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB) {
     std::cout << "current instr at ISSUE " << std::endl;
     print_instruction(current_instruction);
 
@@ -77,6 +84,10 @@ void IssueUnit::issue_instruction(Hardware &hw, std::unordered_map<FUType, std::
         return;
     }
 
+    if (ROB.full()) {
+        return;
+    }
+
 
     for (auto& kvp : all_reservation_stations) {
         if (kvp.first == required_FU) {
@@ -84,13 +95,19 @@ void IssueUnit::issue_instruction(Hardware &hw, std::unordered_map<FUType, std::
             for (ReservationStation& rs : kvp.second) {
                 if (!rs.busy && !rs.executing) {
                     //add to RS
+                    int rob_index = allocate_rob_entry(ROB);
+                    std::cout << "ROB_INDEX=" << rob_index << std::endl; 
+                    ROB.buffer[rob_index].opcode = instr.opcode;
+
+                    rs.ROB_entry = rob_index;
+
                     rs.add_instruction(hw, instr);
                     rs.busy = true;
                     std::cout << "ADDED INSTR TO RS " << rs.number << std::endl;
                     std::cout << "with RS TYPE " << rs.FU_type << std::endl;
 
                     //update RAT
-                    update_RAT(hw, instr.rd, rs.get_tag());
+                    update_RAT(hw, instr.rd, rs.ROB_entry);
                     break;
                 }
             }
@@ -193,7 +210,7 @@ void ALU::execute(Hardware &hw) {
         return;
     }
 
-    update_RAT(hw, instr_res_stn.instr.rd, instr_res_stn.get_tag());
+    update_RAT(hw, instr_res_stn.instr.rd, instr_res_stn.ROB_entry);
 
     perform_ALU_operation(hw, instr_res_stn.instr.opcode, instr_res_stn.value1, instr_res_stn.value2, instr_res_stn.imm);
 
@@ -201,7 +218,127 @@ void ALU::execute(Hardware &hw) {
     //print_cpu_info(instr_res_stn.instr, hw);
 }
 
-void WriteUnit::write_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations) {
+// void LDSTUnit::perform_memory_operation(Hardware &hw, Opcode op, int val1, int val2, int imm) {
+//     int addr = 0;
+//     switch (op) {
+//         case SW:
+//             //hw.memory[hw.reg_file[instr.rs1] + instr.imm] = hw.reg_file[instr.rs2];
+//             addr = hw.reg_file[instr.rs1] + instr.imm;
+//             break;
+                
+//         case LW:
+//             //hw.reg_file[instr.rd] = hw.memory[hw.reg_file[instr.rs1] + instr.imm];
+//             addr = hw.reg_file[instr.rs1] + instr.imm;
+//             break;
+
+//         case HALT:
+//             //hw.finished = true;
+//             break;
+        
+//         default:
+//             break;
+//     }
+// }
+
+void LDSTUnit::execute(Hardware &hw) {
+    
+}
+
+// void WriteUnit::write_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations) {
+//     if (completed_instr_res_stns.size() == 0) {
+//         return;
+//     }
+//     ReservationStation res_stn = completed_instr_res_stns.front();
+
+//     std::cout << "current instr at WRITE " << std::endl;
+//     print_instruction(res_stn.instr);
+
+//     if (res_stn.instr.opcode == COUNT) {
+//         //continue;
+
+//         return;
+//     }
+
+
+//     int reg_number = 0;
+//     for (int& reg : hw.reg_file) {
+//         if (!hw.valid[reg_number]) {
+//             if (hw.register_alias_table[reg_number].equals(res_stn.get_tag())) {
+//                 std::cout << "UPDATING REG " << std::endl;
+//                 hw.register_alias_table[reg_number] = PlaceholderTag();
+//                 hw.valid[reg_number] = true;
+//                 hw.reg_file[reg_number] = res_stn.instr.result;
+//             }
+//         }
+//         reg_number++;
+//     }
+//     (all_reservation_stations[res_stn.FU_type])[res_stn.number].busy = false;
+
+//     (all_reservation_stations[res_stn.FU_type])[res_stn.number].executing = false;
+
+//     //update instr res stn to no longer be busy
+
+
+//     for (auto& kvp : all_reservation_stations) {
+        
+//         for (ReservationStation& res_station : kvp.second) {
+//             if (res_station.tag1.equals(res_stn.get_tag())) {
+//                 res_station.value1 = res_stn.instr.result; //where does result come from?
+//                 res_station.tag1 = PlaceholderTag();
+//             }
+//             if (res_station.tag2.equals(res_stn.get_tag())) {
+//                 res_station.value2 = res_stn.instr.result;
+//                 res_station.tag2 = PlaceholderTag();
+//             }
+//         }
+//     }
+
+//     completed_instr_res_stns.pop();
+
+//     //write result to ARF
+//     //broadcast to all res stn's
+
+//     //remove completed rs from todolist for write
+
+//     std::cout << "REGISTERS" << std::endl;
+//     int counter = 0;
+//     for (int reg : hw.reg_file) {
+//         std::cout << register_to_string(static_cast<Register>(counter)) << "=";
+//         counter++;
+//         std::cout << reg << " ";
+//     }
+//     std::cout << std::endl;
+
+
+//     std::cout << "RAT" << std::endl;
+//     counter = 0;
+//     for (Tag reg_alias : hw.register_alias_table) {
+//         std::cout << register_to_string(static_cast<Register>(counter)) << "=";
+//         counter++;
+//         std::cout << reg_alias.number << " ";
+//     }
+//     std::cout << std::endl;
+
+
+//     std::cout << "MEMORY " << std::endl;
+//     for (int entry : hw.memory) {
+//         std::cout << entry << " ";
+//     }
+//     std::cout << std::endl;
+
+//     std::cout << "VARIABLE LOCATIONS " << std::endl;
+
+//     for (auto entry : hw.variable_locations) {
+//         std::cout << entry.first << " ";
+//         std::cout << entry.second << " ";
+
+//     }
+//     std::cout << std::endl;
+    
+
+// }
+
+void WriteUnit::write_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB) {
     if (completed_instr_res_stns.size() == 0) {
         return;
     }
@@ -216,133 +353,84 @@ void WriteUnit::write_result(Hardware &hw, std::unordered_map<FUType, std::vecto
         return;
     }
 
+    ROB.buffer[res_stn.ROB_entry].result = res_stn.instr.result;
 
-    int reg_number = 0;
-    for (int& reg : hw.reg_file) {
-        if (!hw.valid[reg_number]) {
-            if (hw.register_alias_table[reg_number].equals(res_stn.get_tag())) {
-                std::cout << "UPDATING REG " << std::endl;
-                hw.register_alias_table[reg_number] = PlaceholderTag();
-                hw.valid[reg_number] = true;
-                hw.reg_file[reg_number] = res_stn.instr.result;
+    if (res_stn.instr.opcode != SW) {
+
+        //search for destination reg
+        int dest_reg = 0;
+        int reg_number = 0;
+        for (int& reg : hw.reg_file) {
+            if (!hw.valid[reg_number]) {
+                if (hw.register_alias_table[reg_number]==(res_stn.ROB_entry)) {
+                    dest_reg = reg_number;
+                    std::cout << "DEST_REG=" << dest_reg << std::endl;
+                }
             }
+            reg_number++;
         }
-        reg_number++;
+
+        ROB.buffer[res_stn.ROB_entry].destination = dest_reg;
+        ROB.buffer[res_stn.ROB_entry].ready = true;
+
     }
+
+
     (all_reservation_stations[res_stn.FU_type])[res_stn.number].busy = false;
 
     (all_reservation_stations[res_stn.FU_type])[res_stn.number].executing = false;
 
-    //update instr res stn to no longer be busy
+    completed_instr_res_stns.pop();
 
+}
 
+void commit_store_instr(Hardware &hw, int destination, int result) {
+    hw.memory[destination] = result;
+}
+
+void commit_result_to_ARF(Hardware &hw, int destination, int result) {
+    std::cout << "COMMITTING TO REG " << destination << std::endl;
+    hw.register_alias_table[destination] = -1;
+    hw.valid[destination] = true;
+    hw.reg_file[destination] = result;
+}
+
+void broadcast_result(std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, int rob_index, int result) {
     for (auto& kvp : all_reservation_stations) {
         
         for (ReservationStation& res_station : kvp.second) {
-            if (res_station.tag1.equals(res_stn.get_tag())) {
-                res_station.value1 = res_stn.instr.result; //where does result come from?
-                res_station.tag1 = PlaceholderTag();
+            if (res_station.tag1==(rob_index)) {
+                res_station.value1 = result; //where does result come from?
+                res_station.tag1 = -1;
             }
-            if (res_station.tag2.equals(res_stn.get_tag())) {
-                res_station.value2 = res_stn.instr.result;
-                res_station.tag2 = PlaceholderTag();
+            if (res_station.tag2==(rob_index)) {
+                res_station.value2 = result;
+                res_station.tag2 = -1;
             }
         }
     }
+}
 
-    completed_instr_res_stns.pop();
-
-
-    // for (ReservationStation res_stn : completed_instr_res_stns) {
-
-    //     std::cout << "current instr at WRITE " << std::endl;
-    //     print_instruction(res_stn.instr);
-    //     if (res_stn.instr.opcode == COUNT) {
-    //         continue;
-    //     }
-
-
-    //     int reg_number = 0;
-    //     for (int& reg : hw.reg_file) {
-    //         if (!hw.valid[reg_number]) {
-    //             if (hw.register_alias_table[reg_number].equals(res_stn.get_tag())) {
-    //                 std::cout << "UPDATING REG " << std::endl;
-    //                 hw.register_alias_table[reg_number] = PlaceholderTag();
-    //                 hw.valid[reg_number] = true;
-    //                 hw.reg_file[reg_number] = res_stn.instr.result;
-    //                 std::cout << "with RESULT " << res_stn.instr.result;
-    //             }
-    //         }
-    //         reg_number++;
-    //     }
-    //     (all_reservation_stations[res_stn.FU_type])[res_stn.number].busy = false;
-
-    //     //update instr res stn to no longer be busy
-
-
-    //     for (auto& kvp : all_reservation_stations) {
-            
-    //         for (ReservationStation& res_station : kvp.second) {
-    //             if (res_station.tag1.equals(res_stn.get_tag())) {
-    //                 res_station.tag1 = PlaceholderTag();
-    //                 res_station.value1 = res_stn.instr.result; //where does result come from?
-    //             }
-    //             else if (res_station.tag2.equals(res_stn.get_tag())) {
-    //                 res_station.tag2 = PlaceholderTag();
-    //                 res_station.value2 = res_stn.instr.result;
-    //             }
-    //         }
-    //     }
-    // }
-
-
-    //write result to ARF
-    //broadcast to all res stn's
-
-    //remove completed rs from todolist for write
-
-    std::cout << "REGISTERS" << std::endl;
-    int counter = 0;
-    for (int reg : hw.reg_file) {
-        std::cout << register_to_string(static_cast<Register>(counter)) << "=";
-        counter++;
-        std::cout << reg << " ";
+void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB) {
+    if (ROB.empty()) {
+        return;
     }
-    std::cout << std::endl;
+    std::cout << "COMMITTING ROB " << ROB.head << std::endl;
+    ROBEntry rob_head = ROB.get_front();
+    if (rob_head.ready) {
+        if (!rob_head.is_store_instr) {
+            commit_result_to_ARF(hw, rob_head.destination, rob_head.result);
+            broadcast_result(all_reservation_stations, ROB.head, rob_head.result);
+            ROB.pop();
 
-
-    std::cout << "RAT" << std::endl;
-    counter = 0;
-    for (Tag reg_alias : hw.register_alias_table) {
-        std::cout << register_to_string(static_cast<Register>(counter)) << "=";
-        counter++;
-        std::cout << reg_alias.number << " ";
+        }
     }
-    std::cout << std::endl;
-
-
-    std::cout << "MEMORY " << std::endl;
-    for (int entry : hw.memory) {
-        std::cout << entry << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "VARIABLE LOCATIONS " << std::endl;
-
-    for (auto entry : hw.variable_locations) {
-        std::cout << entry.first << " ";
-        std::cout << entry.second << " ";
-
-    }
-    std::cout << std::endl;
-    
-
 }
 
 void OoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     fetch_unit.fetch(hw, program);
 
-    issue_unit.issue_instruction(hw, all_reservation_stations);
+    issue_unit.issue_instruction(hw, all_reservation_stations, ROB);
 
     //std::cout << "INSTR AT RS 0 " << opcode_to_string((all_reservation_stations[ARITH])[0].instr.opcode) << std::endl;
 
@@ -367,13 +455,62 @@ void OoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     //     branch_unit.execute(all_reservation_stations[BRANCH]);
     // }
 
-    write_unit.write_result(hw, all_reservation_stations);
+    write_unit.write_result(hw, all_reservation_stations, ROB);
+
+    commit_unit.commit_result(hw, all_reservation_stations, ROB);
+
+    std::cout << "REGISTERS" << std::endl;
+    int counter = 0;
+    for (int reg : hw.reg_file) {
+        std::cout << register_to_string(static_cast<Register>(counter)) << "=";
+        counter++;
+        std::cout << reg << " ";
+    }
+    std::cout << std::endl;
+
+
+    std::cout << "RAT" << std::endl;
+    counter = 0;
+    for (int rob_index : hw.register_alias_table) {
+        std::cout << register_to_string(static_cast<Register>(counter)) << "=";
+        counter++;
+        std::cout << rob_index << " ";
+    }
+    std::cout << std::endl;
+
+
+    std::cout << "MEMORY " << std::endl;
+    for (int entry : hw.memory) {
+        std::cout << entry << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "VARIABLE LOCATIONS " << std::endl;
+
+    for (auto entry : hw.variable_locations) {
+        std::cout << entry.first << " ";
+        std::cout << entry.second << " ";
+
+    }
+    std::cout << std::endl;
 
     for (ReservationStation rs : all_reservation_stations[ARITH]) {
         std::cout << "RS " << rs.number << std::endl;
         std::cout << "OPCODE " << opcode_to_string(rs.instr.opcode) << std::endl;
-        std::cout << "TAG1 " << rs.tag1.number << std::endl;
-        std::cout << "TAG2 " << rs.tag2.number << std::endl;
+        std::cout << "TAG1 " << rs.tag1 << std::endl;
+        std::cout << "TAG2 " << rs.tag2 << std::endl;
+        std::cout << std::endl;
+    }
+    int index = 0;
+    for (ROBEntry rob_entry : ROB.buffer) {
+        std::cout << "ROB " << index << std::endl;
+        std::cout << "IN USE " << std::to_string(rob_entry.in_use) << std::endl;
+        std::cout << "READY " << std::to_string(rob_entry.ready) << std::endl;
+        std::cout << "DEST " << rob_entry.destination << std::endl;
+        std::cout << "RESULT " << rob_entry.result << std::endl;
+        std::cout << "OPCODE" << opcode_to_string(rob_entry.opcode) << std::endl;
+        std::cout << std::endl;
+        index++;
     }
 
     getchar();
