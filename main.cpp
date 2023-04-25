@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     hw.pc = 0;
     hw.reg_file[0] = 0;
 
-    std::string filename = "test_programs/add.asm";
+    std::string filename = "test_programs/addmem.asm";
 
     std::vector<Instruction> program = parse_file(filename, hw);
 

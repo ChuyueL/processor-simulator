@@ -5,6 +5,7 @@
 #include "units.h"
 #include "reservation_station.h"
 #include "reorder_buffer.h"
+#include "ldst_queue.h"
 #include <vector>
 #include <iostream>
 #include <unordered_map>
@@ -18,7 +19,7 @@ class IssueUnit : public Unit {
 
     bool stalled = false;
 
-    void issue_instruction(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);
+    void issue_instruction(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, std::deque<LDSTQueue_Entry> &ldst_queue, ReorderBuffer &ROB);
 
     IssueUnit() {
         current_instruction = PlaceholderInstruction();
@@ -31,13 +32,12 @@ class FunctionalUnit : public Unit {
     FUType type;
     ReservationStation instr_res_stn = PlaceholderRS();
 
-    void find_instruction_to_execute(std::vector<ReservationStation> reservation_stations);
-
-
 };
 
 class ALU : public FunctionalUnit {
     public: 
+
+    void find_instruction_to_execute(std::vector<ReservationStation> reservation_stations);
 
     void perform_ALU_operation(Hardware &hw, Opcode op, int val1, int val2, int imm);
     void execute(Hardware &hw);
@@ -51,8 +51,29 @@ class ALU : public FunctionalUnit {
 class LDSTUnit : public FunctionalUnit {
     public: 
 
-    void perform_memory_operation(Hardware &hw, Opcode op, int val1, int val2, int imm);
-    void execute(Hardware &hw);
+    //void perform_memory_operation(Hardware &hw, Opcode op, int val1, int val2, int imm);
+
+    void find_mem_instr(std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, std::deque<LDSTQueue_Entry> &queue);
+
+    //calculate address for memory access
+    void address_calculation(std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);
+
+    //perform memory access (for loads only)
+    void memory_access(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);
+
+    void execute_ldst_cycle(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);
+
+    void advance_ldst_pipeline();
+
+    Tag instr1_rs_tag = PlaceholderTag();
+
+    Tag instr2_rs_tag = PlaceholderTag();
+
+    int result1 = 0;
+    int result2 = 0;
+
+    bool stage1_stalled = false;
+    bool stage2_stalled = false;
 
     LDSTUnit() {
         type = LOADSTORE;
@@ -100,11 +121,10 @@ class OoOPipeline {
 
         std::unordered_map<FUType, std::vector<ReservationStation>> all_reservation_stations;
         
-        //std::queue<> load_queue;
+        std::deque<LDSTQueue_Entry> ldst_queue;
 
         ReorderBuffer ROB;
 
-        
 
         WriteUnit write_unit;
 

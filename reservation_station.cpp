@@ -22,4 +22,5 @@ void ReservationStation::add_instruction(Hardware &hw, Instruction _instr) {
     else {
         value2 = hw.reg_file[instr.rs2];
     }
+    
 }

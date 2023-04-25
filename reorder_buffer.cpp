@@ -1,6 +1,7 @@
 #include "reorder_buffer.h"
 
 void ROBEntry::reclaim() {
+    opcode = COUNT;
     in_use = false;
     ready = false;
 }
