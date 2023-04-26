@@ -4,6 +4,10 @@ void ROBEntry::reclaim() {
     opcode = COUNT;
     in_use = false;
     ready = false;
+    result = 0;
+    rs_tag = PlaceholderTag();
+    is_store_instr = false;
+    destination = 0;
 }
 
 void ReorderBuffer::pop() {
@@ -40,4 +44,13 @@ bool ReorderBuffer::empty() {
 
 ROBEntry ReorderBuffer::get_front() {
     return buffer[head];
+}
+
+void ReorderBuffer::flush() {
+    for (ROBEntry& entry : buffer) {
+        entry.reclaim();
+    }
+
+    head = 0;
+    tail = 0;
 }

@@ -19,6 +19,7 @@ class ROBEntry {
 
     bool in_use = false;
     bool is_store_instr = false;
+    bool is_branch = false;
     Opcode opcode = COUNT;
     Tag rs_tag = PlaceholderTag();
     FUType instr_type = NONE;
@@ -53,6 +54,7 @@ class ReorderBuffer {
         int push(ROBEntry newEntry);
         bool full();
         bool empty();
+        void flush();
 
         ROBEntry get_front();
 

@@ -15,8 +15,10 @@ add t5 t7 t3 #memory address for c[i]
 sw t5 t4 0 #store result into c[i]
 addi t2 t2 1 #i++
 addi t3 t3 1 #increase offset by 4 because word size
-blt t2 t8 for # if (i < 10) go round loop again
 halt
+
+blt t2 t8 for # if (i < 10) go round loop again
+
 
 .data:
 

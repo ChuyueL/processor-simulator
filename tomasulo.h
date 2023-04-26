@@ -84,7 +84,11 @@ class LDSTUnit : public FunctionalUnit {
 class BranchUnit : public FunctionalUnit {
     public: 
 
-    void execute(Opcode op, int rd, int val1, int val2, int imm);
+    Tag instr_rs_tag = PlaceholderTag();
+
+    void find_branch_instr(std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations);
+
+    void get_branch_address(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);
 
     BranchUnit() {
         type = BRANCH;
@@ -101,8 +105,11 @@ class WriteUnit : public Unit {
 
 class CommitUnit : public Unit {
     public:
+        bool flush = false;
 
         void commit_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);
+        bool check_if_branch_correctly_predicted(std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ROBEntry ROB_entry);
+
 };
 
 //out of order pipeline
@@ -154,11 +161,16 @@ class OoOPipeline {
 
         void advance_pipeline(Hardware &hw);
 
-        void flush_pipeline(Hardware &hw, int number);
+        void reset_all_res_stns();
+
+        void flush_pipeline();
 
         void stall_pipeline();
 
         void continue_pipeline();
+
+
+
 
 };
 

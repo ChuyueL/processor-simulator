@@ -8,7 +8,7 @@
 class Hardware {
     public:
 
-    int32_t memory[2048] = {0};
+    int32_t memory[128] = {0};
     int32_t reg_file[32] = {0};
     int32_t pc;
     bool finished = false;
