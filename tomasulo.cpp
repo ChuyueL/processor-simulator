@@ -106,6 +106,8 @@ void IssueUnit::issue_instruction(Hardware &hw, std::unordered_map<FUType, std::
                     ///NEED TO CHANGE FOR DIFF INSTR TYPES
                     ROB.buffer[rob_index].destination = instr.rd;
 
+                    ROB.buffer[rob_index].instr_type = instr.type;
+
                     if (instr.opcode == HALT) {
                         ROB.buffer[rob_index].ready = true;
                         return;
@@ -115,7 +117,14 @@ void IssueUnit::issue_instruction(Hardware &hw, std::unordered_map<FUType, std::
 
                     rs.ROB_entry = rob_index;
 
+
                     rs.add_instruction(hw, instr);
+
+                    //update RAT
+                    if (instr.type == R || instr.type == I) {
+                        update_RAT(hw, instr.rd, rs.ROB_entry);
+
+                    }
 
                     if (required_FU == LOADSTORE) {
                         bool is_store = add_to_ldst_queue(rs, ldst_queue);
@@ -127,10 +136,8 @@ void IssueUnit::issue_instruction(Hardware &hw, std::unordered_map<FUType, std::
                     std::cout << "ADDED INSTR TO RS " << rs.number << std::endl;
                     std::cout << "with RS TYPE " << rs.FU_type << std::endl;
 
-                    //update RAT
-                    if (instr.type == R || instr.type == I) {
-                        update_RAT(hw, instr.rd, rs.ROB_entry);
-
+                    if (instr.type == B) {
+                        ROB.buffer[rob_index].is_branch = true;
                     }
                     return;
                 }
@@ -390,7 +397,7 @@ void WriteUnit::write_result(Hardware &hw, std::unordered_map<FUType, std::vecto
     ROB.buffer[res_stn.ROB_entry].ready = true;
 
 
-    (all_reservation_stations[res_stn.FU_type])[res_stn.number].busy = false;
+    //(all_reservation_stations[res_stn.FU_type])[res_stn.number].busy = false;
 
 
     completed_instr_res_stns.pop();
@@ -404,8 +411,8 @@ void commit_store_instr(Hardware &hw, int destination, int result) {
 
 void commit_result_to_ARF(Hardware &hw, int destination, int result) {
     std::cout << "COMMITTING TO REG " << destination << std::endl;
-    hw.register_alias_table[destination] = -1;
-    hw.valid[destination] = true;
+    //hw.register_alias_table[destination] = -1;
+    //hw.valid[destination] = true;
     hw.reg_file[destination] = result;
 }
 
@@ -423,6 +430,34 @@ void broadcast_result(std::unordered_map<FUType, std::vector<ReservationStation>
             }
         }
     }
+}
+
+bool CommitUnit::check_safe_to_set_valid(Hardware &hw, ReorderBuffer ROB) {
+    // ROBEntry rob_head = ROB.get_front();
+
+    // int destination = rob_head.destination;
+
+    // for (ROBEntry entry : ROB.buffer) {
+    //     if (entry.instr_type == R || entry.instr_type == I) {
+    //         if (entry.destination == destination) {
+    //             return false;
+    //         }
+    //     }
+    // }
+
+    ROBEntry rob_head = ROB.get_front();
+
+    if (hw.register_alias_table[rob_head.destination] == ROB.head) {
+        return true;
+    }
+    return false;
+
+    return true;
+}
+
+void CommitUnit::set_dest_valid(Hardware &hw, int destination) {
+    hw.register_alias_table[destination] = -1;
+    hw.valid[destination] = true;
 }
 
 bool CommitUnit::check_if_branch_correctly_predicted(std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ROBEntry ROB_entry) {
@@ -475,6 +510,8 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
     }
     if (rob_head.ready) {
         std::cout << "ROB HEAD READY" << std::endl;
+
+        committed = true;
         if (rob_head.opcode == HALT) {
             // if (ROB.empty()) {
             //     hw.finished = true;
@@ -509,10 +546,19 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
         if (!rob_head.is_store_instr) {
             commit_result_to_ARF(hw, rob_head.destination, rob_head.result);
             broadcast_result(all_reservation_stations, ROB.head, rob_head.result);
+
+            bool set_valid = check_safe_to_set_valid(hw, ROB);
+
+            if (set_valid) {
+                set_dest_valid(hw, rob_head.destination);
+            }
+
             std::cout << "POP ROB" << std::endl;
             ROB.pop();
 
             (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].executing = false;
+            (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].busy = false;
+
 
         }
         else {
@@ -522,6 +568,8 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
                 commit_store_instr(hw, rob_head.destination, result);
                 ROB.pop();
                 (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].executing = false;
+                (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].busy = false;
+
 
             }
             else {
@@ -533,11 +581,28 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
     }
 }
 
+void OoOPipeline::reset_regs(Hardware &hw) {
+    for (int i = 0; i < hw.reg_file.size(); i++) {
+        hw.valid[i] = true;
+        hw.register_alias_table[i] = -1;
+    }
+}
+
 void OoOPipeline::reset_all_res_stns() {
     for (auto &kvp : all_reservation_stations) {
         for (ReservationStation &rs : kvp.second) {
-            rs = PlaceholderRS();
-            rs.FU_type = kvp.first;
+            // rs = PlaceholderRS();
+            // rs.FU_type = kvp.first;
+            rs.address = 0;
+            rs.busy = false;
+            rs.executing = false;
+            rs.imm = 0;
+            rs.instr = PlaceholderInstruction();
+            rs.ROB_entry = 0;
+            rs.tag1 = -1;
+            rs.tag2 = -1;
+            rs.value1 = 0;
+            rs.value2 = 0;
         }
     }
 }
@@ -572,9 +637,15 @@ void OoOPipeline::flush_pipeline() {
 void OoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     commit_unit.commit_result(hw, all_reservation_stations, ROB);
 
+    if (commit_unit.committed == true) {
+        commit_unit.committed = false;
+        instructions_executed++;
+    }
+
     if (commit_unit.flush) {
         std::cout << "FLUSHING PIPELINE \n";
         ROB.flush();
+        reset_regs(hw);
         reset_all_res_stns();
         flush_pipeline();
         commit_unit.flush = false;
@@ -687,6 +758,10 @@ void OoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
         std::cout << "IN USE " << std::to_string(rob_entry.in_use) << std::endl;
         std::cout << "READY " << std::to_string(rob_entry.ready) << std::endl;
         std::cout << "DEST " << rob_entry.destination << std::endl;
+        if (!rob_entry.is_store_instr) {
+            std::cout << "as reg : " << register_to_string(static_cast<Register>(rob_entry.destination)) << std::endl;
+        }
+        
         std::cout << "RESULT " << rob_entry.result << std::endl;
         std::cout << "OPCODE" << opcode_to_string(rob_entry.opcode) << std::endl;
         std::cout << "IS STORE INSTR " << std::to_string(rob_entry.is_store_instr) << std::endl;

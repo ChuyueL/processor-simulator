@@ -23,7 +23,9 @@ int ReorderBuffer::push(ROBEntry newEntry) {
     {
         //buffer.push_back(newEntry);
         buffer[tail] = newEntry;
+        //int index = tail;
         int index = tail;
+
         tail = (tail + 1) % ROB_SIZE;
 
         return index;

@@ -4,12 +4,14 @@
 #include "tag.h"
 #include <unordered_map>
 #include <vector>
+#include <array>
 
 class Hardware {
     public:
 
     int32_t memory[128] = {0};
-    int32_t reg_file[32] = {0};
+    //int32_t reg_file[32] = {0};
+    std::array<int32_t, 32> reg_file = {0};
     int32_t pc;
     bool finished = false;
     bool reg_updating[32] = {false};

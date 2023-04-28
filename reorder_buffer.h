@@ -12,7 +12,7 @@
 #include <deque>
 #include <array>
 
-#define ROB_SIZE 10
+#define ROB_SIZE 30
 
 class ROBEntry {
     public:
@@ -22,7 +22,7 @@ class ROBEntry {
     bool is_branch = false;
     Opcode opcode = COUNT;
     Tag rs_tag = PlaceholderTag();
-    FUType instr_type = NONE;
+    InstrType instr_type = J;
     int destination = 0;
     int result = 0;
     bool ready = false;
