@@ -460,6 +460,37 @@ void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     //     }
     // }
 
+    if (writeback_unit.current_instruction.opcode != COUNT) {
+        instructions_executed++;
+    }
+
+    if (writeback_unit.current_instruction.opcode == HALT) {
+        flush_pipeline(hw, 4);
+
+        writeback_unit.writeback(writeback_unit.current_instruction, hw);
+
+    }
+    else {
+        writeback_unit.writeback(writeback_unit.current_instruction, hw);
+    }
+
+    memory_unit.memory_stage(memory_unit.current_instruction, hw);
+
+    if (execute_unit.current_instruction.opcode == BEQ || execute_unit.current_instruction.opcode == BLT) {
+        flush_pipeline(hw, 2);
+        execute_unit.execute(execute_unit.current_instruction, hw);      
+
+    }
+    else {
+        execute_unit.execute(execute_unit.current_instruction, hw);      
+    }
+
+    if (stalled) {
+        //check if can unstall
+        if (!check_for_dependency(decode_unit.current_instruction, hw)) {
+            continue_pipeline();
+        }
+    }
 
     if (!stalled) {
         fetch_unit.fetch(hw, program);
@@ -477,15 +508,6 @@ void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
         std::cout << "STALLED" << std::endl;
     }
 
-    if (execute_unit.current_instruction.opcode == BEQ || execute_unit.current_instruction.opcode == BLT) {
-        flush_pipeline(hw, 2);
-        execute_unit.execute(execute_unit.current_instruction, hw);      
-
-    }
-    else {
-        execute_unit.execute(execute_unit.current_instruction, hw);      
-    }
-
     //execute_unit.execute(execute_unit.current_instruction, hw);      
 
 
@@ -498,30 +520,7 @@ void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     // else {
     //     memory_unit.memory_stage(memory_unit.current_instruction, hw);
     // }
-
-    memory_unit.memory_stage(memory_unit.current_instruction, hw);
-
-    if (writeback_unit.current_instruction.opcode != COUNT) {
-        instructions_executed++;
-    }
-
-    if (writeback_unit.current_instruction.opcode == HALT) {
-        flush_pipeline(hw, 4);
-
-        writeback_unit.writeback(writeback_unit.current_instruction, hw);
-
-    }
-    else {
-        writeback_unit.writeback(writeback_unit.current_instruction, hw);
-    }
-
-
-    if (stalled) {
-        //check if can unstall
-        if (!check_for_dependency(decode_unit.current_instruction, hw)) {
-            continue_pipeline();
-        }
-    }
+    
 }
 
 void Pipeline::advance_pipeline(Hardware &hw) {

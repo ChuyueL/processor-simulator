@@ -49,25 +49,25 @@ int main(int argc, char* argv[]) {
 
     // }
 
-    // int num_cycles = 0;
-
-    // Pipeline pipeline = Pipeline();
-
-    // while (!hw.finished) {
-    //     pipeline.clock_cycle(hw, program);
-    //     pipeline.advance_pipeline(hw);
-    //     num_cycles++;
-    // }
-
-    OoOPipeline pipeline = OoOPipeline();
-
     int num_cycles = 0;
+
+    Pipeline pipeline = Pipeline();
 
     while (!hw.finished) {
         pipeline.clock_cycle(hw, program);
         pipeline.advance_pipeline(hw);
         num_cycles++;
     }
+
+    // OoOPipeline pipeline = OoOPipeline();
+
+    // int num_cycles = 0;
+
+    // while (!hw.finished) {
+    //     pipeline.clock_cycle(hw, program);
+    //     pipeline.advance_pipeline(hw);
+    //     num_cycles++;
+    // }
 
 
     for (Instruction instr : program) {

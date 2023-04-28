@@ -635,12 +635,16 @@ void OoOPipeline::flush_pipeline() {
 }
 
 void OoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
+
     commit_unit.commit_result(hw, all_reservation_stations, ROB);
 
     if (commit_unit.committed == true) {
         commit_unit.committed = false;
         instructions_executed++;
     }
+    std::cout << "number of completed instrs=" << write_unit.completed_instr_res_stns.size() << std::endl;
+
+    write_unit.write_result(hw, all_reservation_stations, ROB);
 
     if (commit_unit.flush) {
         std::cout << "FLUSHING PIPELINE \n";
@@ -651,18 +655,6 @@ void OoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
         commit_unit.flush = false;
         return;
     }
-
-    std::cout << "number of completed instrs=" << write_unit.completed_instr_res_stns.size() << std::endl;
-
-    write_unit.write_result(hw, all_reservation_stations, ROB);
-
-    
-    fetch_unit.fetch(hw, program);
-
-    issue_unit.issue_instruction(hw, all_reservation_stations, ldst_queue, ROB);
-
-    //std::cout << "INSTR AT RS 0 " << opcode_to_string((all_reservation_stations[ARITH])[0].instr.opcode) << std::endl;
-
 
     for (ALU& alu : ALUs) {
         alu.execute(hw);
@@ -676,6 +668,15 @@ void OoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     for (BranchUnit& branch_unit : branch_units) {
         branch_unit.get_branch_address(hw, all_reservation_stations, ROB);
     }
+
+    issue_unit.issue_instruction(hw, all_reservation_stations, ldst_queue, ROB);
+    
+    fetch_unit.fetch(hw, program);
+
+    
+
+    //std::cout << "INSTR AT RS 0 " << opcode_to_string((all_reservation_stations[ARITH])[0].instr.opcode) << std::endl;
+
 
     std::cout << "REGISTERS" << std::endl;
     int counter = 0;
@@ -780,6 +781,7 @@ void OoOPipeline::advance_pipeline(Hardware &hw) {
             if ((all_reservation_stations[BRANCH])[branch_unit.instr_rs_tag.number].instr.opcode != COUNT) {
                 ReservationStation completed_rs = (all_reservation_stations[BRANCH])[branch_unit.instr_rs_tag.number];
                 write_unit.completed_instr_res_stns.emplace(completed_rs);
+                branch_unit.instr_rs_tag = PlaceholderTag();
             }
             
         }
@@ -791,6 +793,7 @@ void OoOPipeline::advance_pipeline(Hardware &hw) {
         if (alu.instr_res_stn.FU_type != NONE) {
             if (alu.instr_res_stn.instr.opcode != COUNT) {
                 write_unit.completed_instr_res_stns.emplace(alu.instr_res_stn);
+                alu.instr_res_stn = PlaceholderRS();
             }
             
 
@@ -809,6 +812,7 @@ void OoOPipeline::advance_pipeline(Hardware &hw) {
             if ((all_reservation_stations[LOADSTORE])[ldst_unit.instr2_rs_tag.number].instr.opcode != COUNT) {
                 ReservationStation completed_rs = (all_reservation_stations[LOADSTORE])[ldst_unit.instr2_rs_tag.number];
                 write_unit.completed_instr_res_stns.emplace(completed_rs);
+                ldst_unit.instr2_rs_tag = PlaceholderTag();
             }
             
         }
