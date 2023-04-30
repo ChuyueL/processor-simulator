@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     hw.pc = 0;
     hw.reg_file[0] = 0;
 
-    std::string filename = "programs/vectoradd.asm";
+    std::string filename = "programs/vectoradd_1.asm";
 
     std::vector<Instruction> program = parse_file(filename, hw);
 
@@ -49,25 +49,25 @@ int main(int argc, char* argv[]) {
 
     // }
 
-    int num_cycles = 0;
-
-    Pipeline pipeline = Pipeline();
-
-    while (!hw.finished) {
-        pipeline.clock_cycle(hw, program);
-        pipeline.advance_pipeline(hw);
-        num_cycles++;
-    }
-
-    // OoOPipeline pipeline = OoOPipeline();
-
     // int num_cycles = 0;
+
+    // Pipeline pipeline = Pipeline();
 
     // while (!hw.finished) {
     //     pipeline.clock_cycle(hw, program);
     //     pipeline.advance_pipeline(hw);
     //     num_cycles++;
     // }
+
+    OoOPipeline pipeline = OoOPipeline();
+
+    int num_cycles = 0;
+
+    while (!hw.finished) {
+        pipeline.clock_cycle(hw, program);
+        pipeline.advance_pipeline(hw);
+        num_cycles++;
+    }
 
 
     for (Instruction instr : program) {

@@ -18,8 +18,10 @@ class ReservationStation {
     FUType FU_type;
     int tag1 = -1;
     int tag2 = -1;
+    int tag_i = -1;
     int value1 = 0;
     int value2 = 0;
+    int value_i = 0;
     int imm = 0;
     int address = 0;
     bool busy = false;

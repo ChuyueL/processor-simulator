@@ -70,7 +70,7 @@ int allocate_rob_entry(ReorderBuffer &ROB) {
 }
 
 bool add_to_ldst_queue(ReservationStation rs, std::deque<LDSTQueue_Entry> &queue) {
-    bool is_store = (rs.instr.opcode == SW);
+    bool is_store = (rs.instr.opcode == SW || rs.instr.opcode == STIDX);
     LDSTQueue_Entry newEntry = LDSTQueue_Entry(rs.address, rs.get_tag(), is_store);
     queue.emplace_back(newEntry);
 
@@ -121,7 +121,7 @@ void IssueUnit::issue_instruction(Hardware &hw, std::unordered_map<FUType, std::
                     rs.add_instruction(hw, instr);
 
                     //update RAT
-                    if (instr.type == R || instr.type == I) {
+                    if (instr.type == R || instr.type == I || instr.type == LIDX) {
                         update_RAT(hw, instr.rd, rs.ROB_entry);
 
                     }
@@ -275,9 +275,22 @@ void LDSTUnit::address_calculation(std::unordered_map<FUType, std::vector<Reserv
             break;
 
         case SW:
+            {
             int rob_index = (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].ROB_entry;
             ROB.buffer[rob_index].destination = (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].value1 + (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].imm;
             //ROB.buffer[rob_index].result = (all_reservation_stations[LOADSTORE])
+            }
+            break;
+
+        case LDIDX:
+            (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].address = (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].value1 + (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].value_i;
+            break;
+
+        case STIDX:
+            {
+            int rob_index = (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].ROB_entry;
+            ROB.buffer[rob_index].destination = (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].value2 + (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].value_i;
+            }
             break;
 
     }
@@ -307,6 +320,21 @@ void LDSTUnit::memory_access(Hardware &hw, std::unordered_map<FUType, std::vecto
 
         case SW:
             break; //do nothing
+
+        case LDIDX:
+            {
+            int index = reservation_stations[instr2_rs_tag.number].address;
+            int mem_result = hw.memory[index];
+
+            (all_reservation_stations[LOADSTORE])[instr2_rs_tag.number].instr.result = mem_result;
+
+            std::cout << "ACCESSING MEM " << (all_reservation_stations[LOADSTORE])[instr2_rs_tag.number].address << std::endl;
+
+            }
+            break;
+
+        case STIDX:
+            break;
     }
 }
 
@@ -562,7 +590,7 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
 
         }
         else {
-            if ((all_reservation_stations[LOADSTORE])[rob_head.rs_tag.number].tag2 == -1) {
+            if (rob_head.opcode == SW && (all_reservation_stations[LOADSTORE])[rob_head.rs_tag.number].tag2 == -1) {
                 int result = (all_reservation_stations[LOADSTORE])[rob_head.rs_tag.number].value2;
                 std::cout << "RESULT=" << result << std::endl;
                 commit_store_instr(hw, rob_head.destination, result);
@@ -575,6 +603,14 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
             else {
                 std::cout << "COULDN'T COMMIT SW" << std::endl;
 
+            }
+
+            if (rob_head.opcode == STIDX && (all_reservation_stations[LOADSTORE])[rob_head.rs_tag.number].tag1 == -1) {
+                int result = (all_reservation_stations[LOADSTORE])[rob_head.rs_tag.number].value1;
+                commit_store_instr(hw, rob_head.destination, result);
+                ROB.pop();
+                (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].executing = false;
+                (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].busy = false;
             }
             
         }

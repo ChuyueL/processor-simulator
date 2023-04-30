@@ -22,5 +22,12 @@ void ReservationStation::add_instruction(Hardware &hw, Instruction _instr) {
     else {
         value2 = hw.reg_file[instr.rs2];
     }
+
+    if (!hw.valid[instr.ri]) {
+        tag_i = hw.register_alias_table[instr.ri];
+    }
+    else {
+        value_i = hw.reg_file[instr.ri];
+    }
     
 }

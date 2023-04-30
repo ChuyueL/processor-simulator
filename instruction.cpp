@@ -9,6 +9,8 @@ std::unordered_map<Opcode, std::string> opcode_table = {
     {ADDI, "addi"},
     {LW, "lw"},
     {SW, "sw"},
+    {LDIDX, "ldidx"},
+    {STIDX, "stidx"},
     {BEQ, "beq"},
     {BLT, "blt"},
     {HALT, "halt"},
@@ -59,6 +61,8 @@ std::unordered_map<Opcode, FUType> required_FU = {
     {SW, LOADSTORE},
     {BEQ, BRANCH},
     {BLT, BRANCH},
+    {LDIDX, LOADSTORE},
+    {STIDX, LOADSTORE},
     {HALT, ARITH},
     {COUNT, ARITH}
 };

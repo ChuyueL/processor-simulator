@@ -34,6 +34,8 @@ Opcode string_to_opcode(std::string str) {
     else if (str == "sw") opcode = SW;
     else if (str == "blt") opcode = BLT;
     else if (str == "beq") opcode = BEQ;
+    else if (str == "ldidx") opcode = LDIDX;
+    else if (str == "stidx") opcode = STIDX;
     else if (str == "halt") opcode = HALT;
 
     return opcode;
@@ -109,6 +111,28 @@ Instruction tokens_to_B_instr(std::vector<std::string> tokens) {
     std::string label = tokens[3];
     
     Instruction instr = BTypeInstruction(opcode, rs1, rs2, label);
+
+    return instr;
+}
+
+Instruction tokens_to_LIDX_instr(std::vector<std::string> tokens) {
+    Opcode opcode = string_to_opcode(tokens[0]);
+    int rd = register_name_to_int(tokens[1]);
+    int rs1 = register_name_to_int(tokens[2]);
+    int ri = register_name_to_int(tokens[3]);
+
+    Instruction instr = LIDXInstruction(opcode, rd, rs1, ri);
+    
+    return instr;
+}
+
+Instruction tokens_to_SIDX_instr(std::vector<std::string> tokens) {
+    Opcode opcode = string_to_opcode(tokens[0]);
+    int rs1 = register_name_to_int(tokens[1]);
+    int rs2 = register_name_to_int(tokens[2]);
+    int ri = register_name_to_int(tokens[3]);
+
+    Instruction instr = SIDXInstruction(opcode, rs1, rs2, ri);
 
     return instr;
 }
@@ -228,6 +252,16 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
         }
         else if (tokens[0] == "blt" || tokens[0] == "beq") {
             Instruction new_instr = tokens_to_B_instr(tokens);
+            program.push_back(new_instr);
+            counter++;
+        }
+        else if (tokens[0] == "ldidx") {
+            Instruction new_instr = tokens_to_LIDX_instr(tokens);
+            program.push_back(new_instr);
+            counter++;
+        }
+        else if (tokens[0] == "stidx") {
+            Instruction new_instr = tokens_to_SIDX_instr(tokens);
             program.push_back(new_instr);
             counter++;
         }

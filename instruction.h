@@ -69,6 +69,9 @@ enum Opcode {
 // J TYPE
     JAL,
     HALT,
+//IDX TYPE
+    LDIDX,
+    STIDX,
     COUNT //not actually an instruction
 
 };
@@ -78,7 +81,9 @@ enum InstrType {
     I,
     S,
     B,
-    J
+    J,
+    LIDX,
+    SIDX
 };
 
 class Instruction {
@@ -89,6 +94,7 @@ class Instruction {
         int rs1;
         int rs2;
         int rd;
+        int ri = 0;
         int32_t imm;
         std::string label;
         int result = 0;
@@ -156,6 +162,28 @@ class JTypeInstruction : public Instruction {
         }
 };
 
+class LIDXInstruction : public Instruction {
+    public:
+        LIDXInstruction(Opcode _opcode, int _rd, int _rs1, int _ri) {
+            type = LIDX;
+            opcode = _opcode;
+            rd = _rd;
+            rs1 = _rs1;
+            ri = _ri;
+        }
+};
+
+class SIDXInstruction : public Instruction {
+    public:
+        SIDXInstruction(Opcode _opcode, int _rs1, int _rs2, int _ri) {
+            type = SIDX;
+            opcode = _opcode;
+            ri = _ri;
+            rs1 = _rs1;
+            rs2 = _rs2;
+        }
+};
+
 class PlaceholderInstruction : public Instruction {
     public:
         PlaceholderInstruction() {
@@ -164,6 +192,7 @@ class PlaceholderInstruction : public Instruction {
             rd = 0;
             rs1 = 0;
             rs2 = 0;
+            ri = 0;
             imm = 0;
         }
 };
