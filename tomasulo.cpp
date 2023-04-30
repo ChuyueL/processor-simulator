@@ -637,6 +637,7 @@ void OoOPipeline::reset_all_res_stns() {
             rs.ROB_entry = 0;
             rs.tag1 = -1;
             rs.tag2 = -1;
+            rs.tag_i = -1;
             rs.value1 = 0;
             rs.value2 = 0;
         }

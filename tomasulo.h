@@ -179,4 +179,8 @@ class OoOPipeline {
 
 };
 
+void update_RAT(Hardware &hw, int reg, int rob_index);
+bool add_to_ldst_queue(ReservationStation rs, std::deque<LDSTQueue_Entry> &queue);
+int allocate_rob_entry(ReorderBuffer &ROB);
+
 #endif

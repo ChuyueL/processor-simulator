@@ -2,6 +2,7 @@
 #include "units.h"
 #include "parser.h"
 #include "tomasulo.h"
+#include "superscalar.h"
 #include <vector>
 #include <iostream>
 #include <iomanip>
@@ -14,7 +15,7 @@ int main(int argc, char* argv[]) {
     hw.pc = 0;
     hw.reg_file[0] = 0;
 
-    std::string filename = "programs/vectoradd_1.asm";
+    std::string filename = "programs/gcd.asm";
 
     std::vector<Instruction> program = parse_file(filename, hw);
 
@@ -59,9 +60,11 @@ int main(int argc, char* argv[]) {
     //     num_cycles++;
     // }
 
-    OoOPipeline pipeline = OoOPipeline();
 
     int num_cycles = 0;
+
+    //OoOPipeline pipeline = OoOPipeline();
+    SuperscalarOoOPipeline pipeline = SuperscalarOoOPipeline();
 
     while (!hw.finished) {
         pipeline.clock_cycle(hw, program);
@@ -82,9 +85,9 @@ int main(int argc, char* argv[]) {
 
     std::cout << "total cycles=" << num_cycles << std::endl;
     
-    std::cout << "total instrs executed=" << pipeline.instructions_executed << std::endl;
+    //std::cout << "total instrs executed=" << pipeline.instructions_executed << std::endl;
 
-    std::cout << std::setprecision(2) << std::fixed << "IPC=" << (float)pipeline.instructions_executed / (float)num_cycles << std::endl;
+    //std::cout << std::setprecision(2) << std::fixed << "IPC=" << (float)pipeline.instructions_executed / (float)num_cycles << std::endl;
 
     //std::cin.ignore();
 
