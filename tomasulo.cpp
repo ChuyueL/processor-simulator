@@ -222,7 +222,7 @@ int find_load_instr(std::vector<ReservationStation> &reservation_stations, std::
             return -1;
         }
         Tag current_rs_tag = queue[i].RS_Tag;
-        if (reservation_stations[current_rs_tag.number].tag1 == -1) { //ready
+        if (reservation_stations[current_rs_tag.number].tag1 == -1 && reservation_stations[current_rs_tag.number].tag_i == -1) { //ready
             return i;
         }
     }
@@ -239,7 +239,13 @@ void LDSTUnit::find_mem_instr(std::unordered_map<FUType, std::vector<Reservation
 
 
     if (queue_head.is_store) {
-        if (reservation_stations[queue_head.RS_Tag.number].tag1 == -1) {
+        if (reservation_stations[queue_head.RS_Tag.number].instr.opcode == SW && reservation_stations[queue_head.RS_Tag.number].tag1 == -1) {
+            instr1_rs_tag = queue_head.RS_Tag;
+            (all_reservation_stations[LOADSTORE])[queue_head.RS_Tag.number].executing = true;
+            
+            queue.pop_front();
+        }
+        else if (reservation_stations[queue_head.RS_Tag.number].instr.opcode == STIDX && reservation_stations[queue_head.RS_Tag.number].tag2 == -1 && reservation_stations[queue_head.RS_Tag.number].tag_i == -1) {
             instr1_rs_tag = queue_head.RS_Tag;
             (all_reservation_stations[LOADSTORE])[queue_head.RS_Tag.number].executing = true;
             
@@ -455,6 +461,10 @@ void broadcast_result(std::unordered_map<FUType, std::vector<ReservationStation>
             if (res_station.tag2==(rob_index)) {
                 res_station.value2 = result;
                 res_station.tag2 = -1;
+            }
+            if (res_station.tag_i==(rob_index)) {
+                res_station.value_i = result;
+                res_station.tag_i = -1;
             }
         }
     }

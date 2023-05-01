@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <queue>
 
-#define WIDTH 4
+#define WIDTH 2
 
 class PipelineBuffers {
     public: 

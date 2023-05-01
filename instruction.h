@@ -109,6 +109,7 @@ class RTypeInstruction : public Instruction {
             rd = _rd;
             rs1 = _rs1;
             rs2 = _rs2;
+            ri = 0;
             imm = 0;
         }
 };
@@ -121,6 +122,7 @@ class ITypeInstruction : public Instruction {
             rd = _rd;
             rs1 = _rs1;
             rs2 = 0;
+            ri = 0;
             imm = _imm;
         }
 };
@@ -133,6 +135,7 @@ class STypeInstruction : public Instruction {
             rd = 0;
             rs1 = _rs1;
             rs2 = _rs2;
+            ri = 0;
             imm = _imm;
         }
 };
@@ -145,6 +148,7 @@ class BTypeInstruction : public Instruction {
             rd = 0;
             rs1 = _rs1;
             rs2 = _rs2;
+            ri = 0;
             imm = 0;
             label = _label;
         }
@@ -158,6 +162,7 @@ class JTypeInstruction : public Instruction {
             rd = _rd;
             rs1 = 0;
             rs2 = 0;
+            ri = 0;
             imm = _imm;
         }
 };
@@ -178,6 +183,7 @@ class SIDXInstruction : public Instruction {
         SIDXInstruction(Opcode _opcode, int _rs1, int _rs2, int _ri) {
             type = SIDX;
             opcode = _opcode;
+            rd = 0;
             ri = _ri;
             rs1 = _rs1;
             rs2 = _rs2;
