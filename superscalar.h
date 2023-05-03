@@ -12,6 +12,8 @@ class SuperscalarOoOPipeline {
 
     public:
 
+    int instructions_executed = 0;
+
     SuperscalarFetchUnit fetch_unit;
 
     SuperscalarIssueUnit issue_unit;
@@ -32,6 +34,11 @@ class SuperscalarOoOPipeline {
         fetch_unit = SuperscalarFetchUnit();
         issue_unit = SuperscalarIssueUnit();
         ALUs.push_back(ALU());
+        ALUs.push_back(ALU());
+        ALUs.push_back(ALU());
+        ALUs.push_back(ALU());
+        ALUs.push_back(ALU());
+        ldst_units.push_back(LDSTUnit());
         ldst_units.push_back(LDSTUnit());
         branch_units.push_back(BranchUnit());
 

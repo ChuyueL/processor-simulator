@@ -23,6 +23,7 @@ void SuperscalarOoOPipeline::reset_all_res_stns() {
             rs.tag_i = -1;
             rs.value1 = 0;
             rs.value2 = 0;
+            rs.value_i = 0;
         }
     }
 }
@@ -60,13 +61,8 @@ void SuperscalarOoOPipeline::flush_pipeline() {
 void SuperscalarOoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     commit_unit.commit_results(hw, pipeline_buffers);
 
-    // if (commit_unit.committed == true) {
-    //     commit_unit.committed = false;
-    //     instructions_executed++;
-    // }
-    std::cout << "number of completed instrs=" << pipeline_buffers.completed_instr_res_stns.size() << std::endl;
-
-    write_unit.write_results(hw, pipeline_buffers);
+    instructions_executed += commit_unit.committed_instrs;
+    commit_unit.committed_instrs = 0;
 
     if (commit_unit.flush) {
         std::cout << "FLUSHING PIPELINE \n";
@@ -78,18 +74,45 @@ void SuperscalarOoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> 
         return;
     }
 
+    // if (commit_unit.committed == true) {
+    //     commit_unit.committed = false;
+    //     instructions_executed++;
+    // }
+    std::cout << "number of completed instrs=" << pipeline_buffers.completed_instr_res_stns.size() << std::endl;
+
+    write_unit.write_results(hw, pipeline_buffers);
+
     for (ALU& alu : ALUs) {
+
+        // alu.find_instruction_to_execute(pipeline_buffers.all_reservation_stations[ARITH]);
+        
+        // if (alu.instr_res_stn.FU_type != NONE) {
+        //     (pipeline_buffers.all_reservation_stations[alu.instr_res_stn.FU_type])[alu.instr_res_stn.number].executing = true;
+
+        // }
         alu.execute(hw);
 
     }
 
     for (LDSTUnit& mem_unit : ldst_units) {
+        // mem_unit.advance_ldst_pipeline();
+        
+        // mem_unit.find_mem_instr(pipeline_buffers.all_reservation_stations, pipeline_buffers.ldst_queue);
         mem_unit.execute_ldst_cycle(hw, pipeline_buffers.all_reservation_stations, pipeline_buffers.ROB);
     }
 
     for (BranchUnit& branch_unit : branch_units) {
+        //branch_unit.find_branch_instr(pipeline_buffers.all_reservation_stations);
         branch_unit.get_branch_address(hw, pipeline_buffers.all_reservation_stations, pipeline_buffers.ROB);
+
+        // if (branch_unit.instr_rs_tag.FU_type != NONE) {
+        //     (pipeline_buffers.all_reservation_stations[branch_unit.instr_rs_tag.FU_type])[branch_unit.instr_rs_tag.number].executing = true;
+
+        // }
     }
+
+    std::cout << "size of instruction queue =" << pipeline_buffers.instr_queue.size() << std::endl;
+
 
     issue_unit.issue_instructions(hw, pipeline_buffers);
     

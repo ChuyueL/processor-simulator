@@ -5,12 +5,13 @@
 #include "superscalar_units.h"
 #include "tomasulo.h"
 #include "units.h"
+#include "branch_predictor.h"
 #include <array>
 #include <vector>
 #include <unordered_map>
 #include <queue>
 
-#define WIDTH 2
+#define WIDTH 3
 
 class PipelineBuffers {
     public: 
@@ -36,6 +37,8 @@ class SuperscalarFetchUnit {
 
     public:
 
+    BranchPredictor branch_predictor;
+
     void fetch_instructions(Hardware &hw, std::vector<Instruction> program, PipelineBuffers &buffers);
 
 };
@@ -59,7 +62,15 @@ class SuperscalarCommitUnit {
         bool flush = false;
         std::array<CommitUnit, WIDTH> units;
 
+        int committed_instrs = 0;
+
         void commit_results(Hardware &hw, PipelineBuffers &buffers);
+
+        SuperscalarCommitUnit () {
+            for (int i = 0; i < WIDTH; i++) {
+                units[i] = CommitUnit();
+            }
+        }
 };
 
 #endif

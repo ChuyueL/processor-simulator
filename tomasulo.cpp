@@ -207,7 +207,7 @@ void ALU::execute(Hardware &hw) {
         return;
     }
 
-    update_RAT(hw, instr_res_stn.instr.rd, instr_res_stn.ROB_entry);
+    //update_RAT(hw, instr_res_stn.instr.rd, instr_res_stn.ROB_entry);
 
     perform_ALU_operation(hw, instr_res_stn.instr.opcode, instr_res_stn.value1, instr_res_stn.value2, instr_res_stn.imm);
 
@@ -245,7 +245,7 @@ void LDSTUnit::find_mem_instr(std::unordered_map<FUType, std::vector<Reservation
             
             queue.pop_front();
         }
-        else if (reservation_stations[queue_head.RS_Tag.number].instr.opcode == STIDX && reservation_stations[queue_head.RS_Tag.number].tag2 == -1 && reservation_stations[queue_head.RS_Tag.number].tag_i == -1) {
+        else if (reservation_stations[queue_head.RS_Tag.number].instr.opcode == STIDX && reservation_stations[queue_head.RS_Tag.number].tag1 == -1 && reservation_stations[queue_head.RS_Tag.number].tag2 == -1 && reservation_stations[queue_head.RS_Tag.number].tag_i == -1) {
             instr1_rs_tag = queue_head.RS_Tag;
             (all_reservation_stations[LOADSTORE])[queue_head.RS_Tag.number].executing = true;
             
@@ -267,7 +267,7 @@ void LDSTUnit::find_mem_instr(std::unordered_map<FUType, std::vector<Reservation
 void LDSTUnit::address_calculation(std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB) {
     Opcode op = (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].instr.opcode; 
 
-    if (instr2_rs_tag.FU_type == NONE) {
+    if (instr1_rs_tag.FU_type == NONE) {
         return;
     }
 
@@ -352,11 +352,11 @@ void LDSTUnit::execute_ldst_cycle(Hardware &hw, std::unordered_map<FUType, std::
 
 void LDSTUnit::advance_ldst_pipeline() {
     instr2_rs_tag = instr1_rs_tag;
+    instr1_rs_tag = PlaceholderTag();
 }
 
 //predict never taken
 void BranchUnit::find_branch_instr(std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations) {
-    std::vector<ReservationStation> reservation_sstations = all_reservation_stations[BRANCH];
 
     for (auto& kvp : all_reservation_stations) {
         if (kvp.first == BRANCH) {
@@ -515,7 +515,16 @@ bool CommitUnit::check_if_branch_correctly_predicted(std::unordered_map<FUType, 
                 // hw.pc = ROB_entry.result;
 
                 // ROB.flush();
-                return false;
+                if (!instr.predicted_taken) {
+                    return false;
+                }
+                
+                
+            }
+            else {
+                if (instr.predicted_taken) {
+                    return false;
+                }
             }
             return true;
 
@@ -526,12 +535,34 @@ bool CommitUnit::check_if_branch_correctly_predicted(std::unordered_map<FUType, 
                 // hw.pc = ROB_entry.result;
 
                 // ROB.flush();
-                return false;
+                if (!instr.predicted_taken) {
+                    return false;
+
+                }
+            }
+            else {
+                if (instr.predicted_taken) {
+                    return false;
+                }
             }
             return true;
             break;
     }
 
+}
+
+//called if there's an incorrect branch pred
+void CommitUnit::correct_pc(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ROBEntry ROB_entry) {
+    std::vector<ReservationStation> reservation_stations = all_reservation_stations[BRANCH];
+    Instruction instr = reservation_stations[ROB_entry.rs_tag.number].instr;
+
+    if (instr.predicted_taken) {
+        hw.pc = instr.prev_pc;
+        //hw.pc = ROB_entry.result;
+    }
+    else {
+        hw.pc = ROB_entry.result;
+    }
 }
 
 void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB) {
@@ -559,6 +590,7 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
             // }
 
             hw.finished = true;
+            execution_finished = true;
             ROB.pop();
             
             return;
@@ -568,12 +600,17 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
         if (rob_head.opcode == BLT || rob_head.opcode == BEQ) {
             bool correct = check_if_branch_correctly_predicted(all_reservation_stations, rob_head);
             if (!correct) {
-                hw.pc = rob_head.result;
+                correct_pc(hw, all_reservation_stations, rob_head);
+                //hw.pc = rob_head.result;
                 //ROB.flush();
                 //reset_all_res_stns();
                 flush = true;
-                std::cout << "MISPREDICTED \n";
-                
+                std::cout << "MISPREDICTED \n";                
+            }
+            else {
+                (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].executing = false;
+                (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].busy = false;
+                std::cout << "CORRECTLY PREDICTED\n";
             }
             ROB.pop();
 
@@ -618,9 +655,9 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
             if (rob_head.opcode == STIDX && (all_reservation_stations[LOADSTORE])[rob_head.rs_tag.number].tag1 == -1) {
                 int result = (all_reservation_stations[LOADSTORE])[rob_head.rs_tag.number].value1;
                 commit_store_instr(hw, rob_head.destination, result);
-                ROB.pop();
                 (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].executing = false;
                 (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].busy = false;
+                ROB.pop();
             }
             
         }

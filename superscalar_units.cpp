@@ -10,14 +10,28 @@ void SuperscalarFetchUnit::fetch_instructions(Hardware &hw, std::vector<Instruct
             
             std::cout << "pc=" << hw.pc << std::endl;
 
+            if (current_instruction.type == B) {
+                if (branch_predictor.predict_branch(hw, current_instruction)) {
+                    current_instruction.predicted_taken = true;
+                    current_instruction.prev_pc = hw.pc + 1;
+                    hw.pc = hw.labels[current_instruction.label];
+                }
+                else {
+                    current_instruction.predicted_taken = false;
+                    current_instruction.prev_pc = hw.pc+1;
+                }
+            }
+
+            hw.pc++;
+
+            
+
             buffers.instr_queue.emplace(current_instruction);
 
-        }
-        else {
-            //current_instruction = PlaceholderInstruction();
+
         }
 
-        hw.pc++;
+        
 
     }
 }
@@ -61,7 +75,7 @@ void SuperscalarIssueUnit::issue_instructions(Hardware &hw, PipelineBuffers &buf
 
                         if (instr.opcode == HALT) {
                             buffers.ROB.buffer[rob_index].ready = true;
-                            return;
+                            break;
                         }
 
                         buffers.ROB.buffer[rob_index].rs_tag = rs.get_tag();
@@ -92,7 +106,7 @@ void SuperscalarIssueUnit::issue_instructions(Hardware &hw, PipelineBuffers &buf
                         }
 
                         buffers.instr_queue.pop();
-                        return;
+                        break;
                     }
                 }
                 
@@ -128,7 +142,6 @@ void SuperscalarWriteUnit::write_results(Hardware &hw, PipelineBuffers &buffers)
 
         // }
 
-        //PRETENd evefrytyhing's fine
         std::cout << "SETTING ROB ENTRY READY ENTRY " << res_stn.ROB_entry << std::endl;
         buffers.ROB.buffer[res_stn.ROB_entry].ready = true;
 
@@ -143,9 +156,17 @@ void SuperscalarWriteUnit::write_results(Hardware &hw, PipelineBuffers &buffers)
 void SuperscalarCommitUnit::commit_results(Hardware &hw, PipelineBuffers &buffers) {
     for (CommitUnit &unit : units) {
         unit.commit_result(hw, buffers.all_reservation_stations, buffers.ROB);
+        if (unit.committed) {
+            committed_instrs++;
+            unit.committed = false;
+        }
         if (unit.flush) {
             flush = true;
             unit.flush = false;
+            return;
+        }
+        if (unit.execution_finished) {
+            hw.finished = true;
             return;
         }
     }

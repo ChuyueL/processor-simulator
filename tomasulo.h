@@ -12,7 +12,7 @@
 #include <string>
 #include <queue>
 
-#define NUM_RS 20
+#define NUM_RS 50
 
 class IssueUnit : public Unit {
     public:
@@ -107,11 +107,12 @@ class CommitUnit : public Unit {
     public:
         bool flush = false;
         bool committed = false;
+        bool execution_finished = false;
         void set_dest_valid(Hardware &hw, int destination);
         bool check_safe_to_set_valid(Hardware &hw, ReorderBuffer ROB);
         void commit_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);
         bool check_if_branch_correctly_predicted(std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ROBEntry ROB_entry);
-
+        void correct_pc(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ROBEntry ROB_entry);
 };
 
 //out of order pipeline

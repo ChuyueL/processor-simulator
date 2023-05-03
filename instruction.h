@@ -90,6 +90,8 @@ class Instruction {
 
     public:
         InstrType type;
+        bool predicted_taken = false;
+        int prev_pc = 0;
         Opcode opcode;
         int rs1;
         int rs2;
@@ -174,6 +176,7 @@ class LIDXInstruction : public Instruction {
             opcode = _opcode;
             rd = _rd;
             rs1 = _rs1;
+            rs2 = 0;
             ri = _ri;
         }
 };
