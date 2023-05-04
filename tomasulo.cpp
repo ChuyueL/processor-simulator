@@ -245,7 +245,7 @@ void LDSTUnit::find_mem_instr(std::unordered_map<FUType, std::vector<Reservation
             
             queue.pop_front();
         }
-        else if (reservation_stations[queue_head.RS_Tag.number].instr.opcode == STIDX && reservation_stations[queue_head.RS_Tag.number].tag1 == -1 && reservation_stations[queue_head.RS_Tag.number].tag2 == -1 && reservation_stations[queue_head.RS_Tag.number].tag_i == -1) {
+        else if (reservation_stations[queue_head.RS_Tag.number].instr.opcode == STIDX && reservation_stations[queue_head.RS_Tag.number].tag2 == -1 && reservation_stations[queue_head.RS_Tag.number].tag_i == -1) {
             instr1_rs_tag = queue_head.RS_Tag;
             (all_reservation_stations[LOADSTORE])[queue_head.RS_Tag.number].executing = true;
             
@@ -367,6 +367,8 @@ void BranchUnit::find_branch_instr(std::unordered_map<FUType, std::vector<Reserv
 
                     reservation_station.busy = true;
                     reservation_station.executing = true;
+
+                    return;
 
 
 
@@ -561,7 +563,7 @@ void CommitUnit::correct_pc(Hardware &hw, std::unordered_map<FUType, std::vector
         //hw.pc = ROB_entry.result;
     }
     else {
-        hw.pc = ROB_entry.result;
+        hw.pc = hw.labels[instr.label];
     }
 }
 

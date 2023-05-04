@@ -53,6 +53,12 @@ int register_name_to_int(std::string reg_name) {
     else if (reg_name == "t6") reg = t6;
     else if (reg_name == "t7") reg = t7;
     else if (reg_name == "t8") reg = t8;
+    else if (reg_name == "s0") reg = s0;
+    else if (reg_name == "s1") reg = s1;
+    else if (reg_name == "s2") reg = s2;
+    else if (reg_name == "s3") reg = s3;
+    else if (reg_name == "s4") reg = s4;
+    else if (reg_name == "s5") reg = s5;
 
     return reg;
 

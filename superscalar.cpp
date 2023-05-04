@@ -185,6 +185,7 @@ void SuperscalarOoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> 
         std::cout << "VALUE2 " << rs.value2 << std::endl;
         std::cout << "IMM " << rs.imm << std::endl;
         std::cout << "ADDRESS " << rs.address << std::endl;
+        std::cout << "LABEL " << rs.instr.label << std::endl;
         std::cout << std::endl;
     }
 
@@ -212,6 +213,11 @@ void SuperscalarOoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> 
         std::cout << "OPCODE" << opcode_to_string(rob_entry.opcode) << std::endl;
         std::cout << "IS STORE INSTR " << std::to_string(rob_entry.is_store_instr) << std::endl;
         std::cout << "RS TAG " << rob_entry.rs_tag.number << std::endl;
+        if (rob_entry.rs_tag.FU_type != NONE) {
+            std::cout << "LABEL " << (pipeline_buffers.all_reservation_stations[rob_entry.rs_tag.FU_type])[rob_entry.rs_tag.number].instr.label << std::endl;
+
+        }
+
         std::cout << std::endl;
         index++;
     }

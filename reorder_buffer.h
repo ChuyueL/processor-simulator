@@ -12,7 +12,7 @@
 #include <deque>
 #include <array>
 
-#define ROB_SIZE 50
+#define ROB_SIZE 100
 
 class ROBEntry {
     public:

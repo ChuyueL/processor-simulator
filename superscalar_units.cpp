@@ -14,7 +14,7 @@ void SuperscalarFetchUnit::fetch_instructions(Hardware &hw, std::vector<Instruct
                 if (branch_predictor.predict_branch(hw, current_instruction)) {
                     current_instruction.predicted_taken = true;
                     current_instruction.prev_pc = hw.pc + 1;
-                    hw.pc = hw.labels[current_instruction.label];
+                    hw.pc = hw.labels[current_instruction.label] - 1;
                 }
                 else {
                     current_instruction.predicted_taken = false;
@@ -22,17 +22,84 @@ void SuperscalarFetchUnit::fetch_instructions(Hardware &hw, std::vector<Instruct
                 }
             }
 
-            hw.pc++;
-
-            
-
             buffers.instr_queue.emplace(current_instruction);
+
+
+            hw.pc++;
 
 
         }
 
         
 
+    }
+}
+
+void allocate_to_rs(Hardware &hw, Instruction instr, PipelineBuffers &buffers) {
+    FUType required_FU = opcode_required_FU(instr.opcode);
+
+    if (instr.opcode == COUNT) {
+        return;
+    }
+
+    if (buffers.ROB.full()) {
+        return;
+    }
+
+
+    for (auto& kvp : buffers.all_reservation_stations) {
+        if (kvp.first == required_FU) {
+
+            for (ReservationStation& rs : kvp.second) {
+                if (!rs.busy && !rs.executing) {
+                    //add to RS
+                    int rob_index = allocate_rob_entry(buffers.ROB);
+                    std::cout << "ROB_INDEX=" << rob_index << std::endl; 
+                    buffers.ROB.buffer[rob_index].opcode = instr.opcode;
+
+                    ///NEED TO CHANGE FOR DIFF INSTR TYPES
+                    buffers.ROB.buffer[rob_index].destination = instr.rd;
+
+                    buffers.ROB.buffer[rob_index].instr_type = instr.type;
+
+                    if (instr.opcode == HALT) {
+                        buffers.ROB.buffer[rob_index].ready = true;
+                        return;
+                    }
+
+                    buffers.ROB.buffer[rob_index].rs_tag = rs.get_tag();
+
+                    rs.ROB_entry = rob_index;
+
+
+                    rs.add_instruction(hw, instr);
+
+                    //update RAT
+                    if (instr.type == R || instr.type == I || instr.type == LIDX) {
+                        update_RAT(hw, instr.rd, rs.ROB_entry);
+
+                    }
+
+                    if (required_FU == LOADSTORE) {
+                        bool is_store = add_to_ldst_queue(rs, buffers.ldst_queue);
+                        if (is_store) {
+                            buffers.ROB.buffer[rob_index].is_store_instr = true;
+                        }
+                    }
+                    rs.busy = true;
+                    std::cout << "ADDED INSTR TO RS " << rs.number << std::endl;
+                    std::cout << "with RS TYPE " << rs.FU_type << std::endl;
+
+                    if (instr.type == B) {
+                        buffers.ROB.buffer[rob_index].is_branch = true;
+                    }
+
+                    buffers.instr_queue.pop();
+                    return;
+                }
+            }
+            
+        }
     }
 }
 
@@ -47,71 +114,72 @@ void SuperscalarIssueUnit::issue_instructions(Hardware &hw, PipelineBuffers &buf
         print_instruction(current_instruction);
 
         Instruction instr = current_instruction;
-        FUType required_FU = opcode_required_FU(instr.opcode);
+        allocate_to_rs(hw, instr, buffers);
+        // FUType required_FU = opcode_required_FU(instr.opcode);
 
-        if (instr.opcode == COUNT) {
-            return;
-        }
+        // if (instr.opcode == COUNT) {
+        //     return;
+        // }
 
-        if (buffers.ROB.full()) {
-            return;
-        }
-
-
-        for (auto& kvp : buffers.all_reservation_stations) {
-            if (kvp.first == required_FU) {
-
-                for (ReservationStation& rs : kvp.second) {
-                    if (!rs.busy && !rs.executing) {
-                        //add to RS
-                        int rob_index = allocate_rob_entry(buffers.ROB);
-                        std::cout << "ROB_INDEX=" << rob_index << std::endl; 
-                        buffers.ROB.buffer[rob_index].opcode = instr.opcode;
-
-                        ///NEED TO CHANGE FOR DIFF INSTR TYPES
-                        buffers.ROB.buffer[rob_index].destination = instr.rd;
-
-                        buffers.ROB.buffer[rob_index].instr_type = instr.type;
-
-                        if (instr.opcode == HALT) {
-                            buffers.ROB.buffer[rob_index].ready = true;
-                            break;
-                        }
-
-                        buffers.ROB.buffer[rob_index].rs_tag = rs.get_tag();
-
-                        rs.ROB_entry = rob_index;
+        // if (buffers.ROB.full()) {
+        //     return;
+        // }
 
 
-                        rs.add_instruction(hw, instr);
+        // for (auto& kvp : buffers.all_reservation_stations) {
+        //     if (kvp.first == required_FU) {
 
-                        //update RAT
-                        if (instr.type == R || instr.type == I || instr.type == LIDX) {
-                            update_RAT(hw, instr.rd, rs.ROB_entry);
+        //         for (ReservationStation& rs : kvp.second) {
+        //             if (!rs.busy && !rs.executing) {
+        //                 //add to RS
+        //                 int rob_index = allocate_rob_entry(buffers.ROB);
+        //                 std::cout << "ROB_INDEX=" << rob_index << std::endl; 
+        //                 buffers.ROB.buffer[rob_index].opcode = instr.opcode;
 
-                        }
+        //                 ///NEED TO CHANGE FOR DIFF INSTR TYPES
+        //                 buffers.ROB.buffer[rob_index].destination = instr.rd;
 
-                        if (required_FU == LOADSTORE) {
-                            bool is_store = add_to_ldst_queue(rs, buffers.ldst_queue);
-                            if (is_store) {
-                                buffers.ROB.buffer[rob_index].is_store_instr = true;
-                            }
-                        }
-                        rs.busy = true;
-                        std::cout << "ADDED INSTR TO RS " << rs.number << std::endl;
-                        std::cout << "with RS TYPE " << rs.FU_type << std::endl;
+        //                 buffers.ROB.buffer[rob_index].instr_type = instr.type;
 
-                        if (instr.type == B) {
-                            buffers.ROB.buffer[rob_index].is_branch = true;
-                        }
+        //                 if (instr.opcode == HALT) {
+        //                     buffers.ROB.buffer[rob_index].ready = true;
+        //                     break;
+        //                 }
 
-                        buffers.instr_queue.pop();
-                        break;
-                    }
-                }
+        //                 buffers.ROB.buffer[rob_index].rs_tag = rs.get_tag();
+
+        //                 rs.ROB_entry = rob_index;
+
+
+        //                 rs.add_instruction(hw, instr);
+
+        //                 //update RAT
+        //                 if (instr.type == R || instr.type == I || instr.type == LIDX) {
+        //                     update_RAT(hw, instr.rd, rs.ROB_entry);
+
+        //                 }
+
+        //                 if (required_FU == LOADSTORE) {
+        //                     bool is_store = add_to_ldst_queue(rs, buffers.ldst_queue);
+        //                     if (is_store) {
+        //                         buffers.ROB.buffer[rob_index].is_store_instr = true;
+        //                     }
+        //                 }
+        //                 rs.busy = true;
+        //                 std::cout << "ADDED INSTR TO RS " << rs.number << std::endl;
+        //                 std::cout << "with RS TYPE " << rs.FU_type << std::endl;
+
+        //                 if (instr.type == B) {
+        //                     buffers.ROB.buffer[rob_index].is_branch = true;
+        //                 }
+
+        //                 buffers.instr_queue.pop();
+        //                 break;
+        //             }
+        //         }
                 
-            }
-        }
+        //     }
+        // }
     }
 }
 
@@ -167,6 +235,7 @@ void SuperscalarCommitUnit::commit_results(Hardware &hw, PipelineBuffers &buffer
         }
         if (unit.execution_finished) {
             hw.finished = true;
+            unit.execution_finished = false;
             return;
         }
     }
