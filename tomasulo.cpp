@@ -173,6 +173,14 @@ void ALU::perform_ALU_operation(Hardware &hw, Opcode op, int val1, int val2, int
             //std::cout << "ADDI imm=" << instr.imm << "\n";
             result = val1 + imm;
             break;
+
+        case XOR:
+            if (val1 != val2) {
+                result = 1;
+            }
+            else {
+                result = 0;
+            }
     
 
         case HALT:

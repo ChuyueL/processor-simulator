@@ -40,6 +40,8 @@ class SuperscalarOoOPipeline {
         ALUs.push_back(ALU());
         ldst_units.push_back(LDSTUnit());
         ldst_units.push_back(LDSTUnit());
+        ldst_units.push_back(LDSTUnit());
+        ldst_units.push_back(LDSTUnit());
         branch_units.push_back(BranchUnit());
 
         pipeline_buffers = PipelineBuffers();

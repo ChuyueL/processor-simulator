@@ -1,0 +1,38 @@
+addi t0 zero .a
+addi t7 zero 0x14
+addi t8 zero 0
+
+for:
+
+lw s0 t0 0
+xor t2 s0 zero 
+sw s0 t2 0
+
+lw s1 t0 1
+xor t3 s1 zero 
+sw s1 t3 1
+
+lw s2 t0 2
+xor t4 s2 zero 
+sw s2 t4 2
+
+lw s3 t0 3
+xor t5 s3 zero 
+sw s3 t5 3
+
+
+lw s4 t0 4
+xor t6 s4 zero 
+sw s4 t6 4
+
+addi t0 t0 5
+
+blt t0 t7 for
+
+halt
+
+
+data:
+
+.a
+0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 

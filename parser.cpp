@@ -31,6 +31,7 @@ Opcode string_to_opcode(std::string str) {
     else if (str == "slt") opcode = SLT;
     else if (str == "lw") opcode = LW;
     else if (str == "addi") opcode = ADDI;
+    else if (str == "xor") opcode = XOR;
     else if (str == "sw") opcode = SW;
     else if (str == "blt") opcode = BLT;
     else if (str == "beq") opcode = BEQ;
@@ -240,9 +241,8 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
         //                             tokens.end(),
         //                             [](std::string x) {return x == "";}));
 
-        if (tokens[0] == "add" || tokens[0] == "sub" || tokens[0] == "slt") {
+        if (tokens[0] == "add" || tokens[0] == "sub" || tokens[0] == "slt" || tokens[0] == "xor") {
             Instruction new_instr = tokens_to_R_instr(tokens);
-            std::cout << "ADDDDDDDD" << std::endl;
             program.push_back(new_instr);
             counter++;
         }
