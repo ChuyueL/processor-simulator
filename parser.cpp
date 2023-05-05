@@ -82,14 +82,14 @@ Instruction tokens_to_I_instr(std::vector<std::string> tokens, Hardware hw) {
 
     int rd = register_name_to_int(tokens[1]);
     int rs1 = register_name_to_int(tokens[2]);
-    std::cout << "tokens[3] " << tokens[3] << std::endl;
+    //std::cout << "tokens[3] " << tokens[3] << std::endl;
     int imm;
 
     if (tokens[3][0] != '.') {
         imm = std::stoi(tokens[3], 0, 16);
     }
     else {
-        std::cout << "label " << tokens[3] << std::endl;
+        //std::cout << "label " << tokens[3] << std::endl;
         imm = hw.variable_locations[tokens[3]];
     }
 
@@ -157,12 +157,12 @@ std::vector<std::string> read_program(std::string filename) {
 }
 
 void parse_data(std::vector<std::string> lines, Hardware &hw) {
-    std::cout << "PARSING DATA" << std::endl;
+    //std::cout << "PARSING DATA" << std::endl;
     int next_free_memory = 0;
     bool processing_data = false;
 
     for (std::string line : lines) {
-        std::cout << line << std::endl;
+        //std::cout << line << std::endl;
 
         std::vector<std::string> tokens = tokenise_string(line, ' ');
 
@@ -171,12 +171,12 @@ void parse_data(std::vector<std::string> lines, Hardware &hw) {
         }
 
         if (processing_data) {
-            std::cout << "size " << tokens.size() << std::endl;
+            //std::cout << "size " << tokens.size() << std::endl;
             for (std::string token : tokens) {
-                std::cout << token << std::endl;
+                //std::cout << token << std::endl;
                 int data = std::stoi(token, 0, 16);
 
-                std::cout << "next free memory " << next_free_memory << std::endl;
+                //std::cout << "next free memory " << next_free_memory << std::endl;
                 hw.memory[next_free_memory] = data;
                 next_free_memory++;
             }
@@ -199,33 +199,33 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
 
     parse_data(lines, hw);
 
-    std::cout << "memory after data parsing  " << std::endl;
-    for (int entry : hw.memory) {
-        std::cout << entry << " ";
-    }
-    std::cout << std::endl;
+    //std::cout << "memory after data parsing  " << std::endl;
+    // for (int entry : hw.memory) {
+    //     std::cout << entry << " ";
+    // }
+    // std::cout << std::endl;
 
-    for (auto pair : hw.variable_locations) {
-        std::cout << pair.first << " ";
-        std::cout << pair.second << std::endl;
-    }
+    // for (auto pair : hw.variable_locations) {
+    //     std::cout << pair.first << " ";
+    //     std::cout << pair.second << std::endl;
+    // }
 
     for (std::string line : lines) {
-        std::cout << line << std::endl;
+        //std::cout << line << std::endl;
         std::vector<std::string> tokens = tokenise_string(line, ' ');
 
-        std::cout << "tokens" << std::endl;
+        //std::cout << "tokens" << std::endl;
 
-        for (std::string token : tokens) {
-            std::cout << token << " ";
-        }
-        std::cout << std::endl;
-        std::cout << "size" << tokens.size() << std::endl;
+        // for (std::string token : tokens) {
+        //     std::cout << token << " ";
+        // }
+        //std::cout << std::endl;
+        //std::cout << "size" << tokens.size() << std::endl;
 
 
         if (tokens.size() == 0) {
             continue;
-            std::cout << "skip" << std::endl;
+            //std::cout << "skip" << std::endl;
         }
 
         if (tokens[0] == "add" || tokens[0] == "sub" || tokens[0] == "slt" || tokens[0] == "xor") {

@@ -168,6 +168,7 @@ class LIDXInstruction : public Instruction {
             rs1 = _rs1;
             rs2 = 0;
             ri = _ri;
+            imm = 0;
         }
 };
 
@@ -180,6 +181,7 @@ class SIDXInstruction : public Instruction {
             ri = _ri;
             rs1 = _rs1;
             rs2 = _rs2;
+            imm = 0;
         }
 };
 
