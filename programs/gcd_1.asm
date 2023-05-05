@@ -5,8 +5,8 @@ lw t3 t0 0 #ld value of a
 lw t4 t1 0 #ld value of b
 
 loop:
-blt t5 t4 snd
-blt t4 t5 fst
+blt t3 t4 snd
+beq zero zero fst
 
 check:
 beq t3 t4 end
@@ -28,10 +28,10 @@ halt
 .data:
 
 .a
-0x14
+0xF
 
 .b
-0x23
+0x7D
 
 .gcd
 0x0

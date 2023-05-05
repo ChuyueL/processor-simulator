@@ -158,7 +158,7 @@ void SuperscalarOoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> 
     }
     std::cout << std::endl;
 
-    getchar();
+    //getchar();
 
     std::cout << "ALU RSES" << std::endl;
 
@@ -222,7 +222,7 @@ void SuperscalarOoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> 
         index++;
     }
 
-    getchar();
+    //getchar();
 }
 
 void SuperscalarOoOPipeline::advance_pipeline(Hardware &hw) {

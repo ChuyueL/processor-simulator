@@ -10,12 +10,10 @@ class Hardware {
     public:
 
     int32_t memory[128] = {0};
-    //int32_t reg_file[32] = {0};
     std::array<int32_t, 32> reg_file = {0};
     int32_t pc;
     bool finished = false;
     bool reg_updating[32] = {false};
-    //Tag register_alias_table[32] = {PlaceholderTag()};
     std::vector<int> register_alias_table;
     bool valid[32] = {true};
 

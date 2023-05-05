@@ -228,6 +228,14 @@ void SuperscalarCommitUnit::commit_results(Hardware &hw, PipelineBuffers &buffer
             committed_instrs++;
             unit.committed = false;
         }
+        if (unit.branch_instr) {
+            total_branches += 1;
+            if (unit.branch_predicted_correctly) {
+                correctly_predicted_branches += 1;
+                unit.branch_predicted_correctly = false;
+            }
+            unit.branch_instr = false;
+        }
         if (unit.flush) {
             flush = true;
             unit.flush = false;

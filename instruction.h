@@ -38,16 +38,6 @@ enum Register {
     a5,
     a6,
     a7
-
-    //zero - 1
-    //ra - 1
-    //sp - 1
-    //gp - 1
-    //tp - 1
-    //fp - 1
-    //t0-t8 - 9
-    //s0-s8 - 9
-    //a0-a7 - 8
 };
 
 enum Opcode {

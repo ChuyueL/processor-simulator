@@ -8,6 +8,9 @@
 #include <vector>
 #include <unordered_map>
 
+#define ALU_COUNT 2
+#define LDST_COUNT 2
+
 class SuperscalarOoOPipeline {
 
     public:
@@ -33,15 +36,12 @@ class SuperscalarOoOPipeline {
     SuperscalarOoOPipeline() {
         fetch_unit = SuperscalarFetchUnit();
         issue_unit = SuperscalarIssueUnit();
-        ALUs.push_back(ALU());
-        ALUs.push_back(ALU());
-        ALUs.push_back(ALU());
-        ALUs.push_back(ALU());
-        ALUs.push_back(ALU());
-        ldst_units.push_back(LDSTUnit());
-        ldst_units.push_back(LDSTUnit());
-        ldst_units.push_back(LDSTUnit());
-        ldst_units.push_back(LDSTUnit());
+        for (int i = 0; i < ALU_COUNT; i++) {
+            ALUs.push_back(ALU());
+        }
+        for (int i = 0; i < LDST_COUNT; i++) {
+            ldst_units.push_back(LDSTUnit());
+        }
         branch_units.push_back(BranchUnit());
 
         pipeline_buffers = PipelineBuffers();

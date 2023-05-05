@@ -6,7 +6,7 @@
 
 class BranchPredictor {
     public:
-    bool predict_branch(Hardware &hw, Instruction instr);
+        bool predict_branch(Hardware &hw, Instruction instr);
 };
 
 #endif

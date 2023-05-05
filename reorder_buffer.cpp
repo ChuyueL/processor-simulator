@@ -1,13 +1,15 @@
 #include "reorder_buffer.h"
 
 void ROBEntry::reclaim() {
-    opcode = COUNT;
     in_use = false;
-    ready = false;
-    result = 0;
-    rs_tag = PlaceholderTag();
     is_store_instr = false;
+    is_branch = false;
+    opcode = COUNT;
+    rs_tag = PlaceholderTag();
+    instr_type = J;
     destination = 0;
+    result = 0;
+    ready = false;
 }
 
 void ReorderBuffer::pop() {

@@ -29,28 +29,28 @@ void ALU::find_instruction_to_execute(std::vector<ReservationStation> reservatio
         
     }
     //current_instruction = PlaceholderInstruction();
-    if (!halt_instr_exists) {
-        instr_res_stn = PlaceholderRS();
-        std::cout << "GOT placeholder instr\n";
-    }
-    else {
+    // if (!halt_instr_exists) {
+    //     instr_res_stn = PlaceholderRS();
+    //     std::cout << "GOT placeholder instr\n";
+    // }
+    // else {
 
-        //check if there are any other instructions in RSes
-        for (ReservationStation& res_stn : reservation_stations) {
-            if (res_stn.busy && !res_stn.executing) {
-                if (res_stn.instr.opcode != HALT) {
-                    instr_res_stn = PlaceholderRS();
-                    std::cout << "GOT placeholder instr\n";
+    //     //check if there are any other instructions in RSes
+    //     for (ReservationStation& res_stn : reservation_stations) {
+    //         if (res_stn.busy && !res_stn.executing) {
+    //             if (res_stn.instr.opcode != HALT) {
+    //                 instr_res_stn = PlaceholderRS();
+    //                 std::cout << "GOT placeholder instr\n";
 
-                    return;
-                }
-            }
-        }
+    //                 return;
+    //             }
+    //         }
+    //     }
 
-        instr_res_stn = halt_instr_RS;
-        std::cout << "GOT INSTR FROM res stn " << instr_res_stn.number << std::endl;
-        std::cout << "OPCODE " << opcode_to_string(instr_res_stn.instr.opcode) << std::endl;
-    }
+    //     instr_res_stn = halt_instr_RS;
+    //     std::cout << "GOT INSTR FROM res stn " << instr_res_stn.number << std::endl;
+    //     std::cout << "OPCODE " << opcode_to_string(instr_res_stn.instr.opcode) << std::endl;
+    // }
 
     
 }
@@ -608,6 +608,7 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
 
         //IF BRANCH, CHECK IF BRANCH CORRECTLY PREDICTED.
         if (rob_head.opcode == BLT || rob_head.opcode == BEQ) {
+            branch_instr = true;
             bool correct = check_if_branch_correctly_predicted(all_reservation_stations, rob_head);
             if (!correct) {
                 correct_pc(hw, all_reservation_stations, rob_head);
@@ -621,6 +622,7 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
                 (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].executing = false;
                 (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].busy = false;
                 std::cout << "CORRECTLY PREDICTED\n";
+                branch_predicted_correctly = true;
             }
             ROB.pop();
 

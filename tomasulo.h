@@ -108,6 +108,8 @@ class CommitUnit : public Unit {
         bool flush = false;
         bool committed = false;
         bool execution_finished = false;
+        bool branch_instr = false;
+        bool branch_predicted_correctly = false;
         void set_dest_valid(Hardware &hw, int destination);
         bool check_safe_to_set_valid(Hardware &hw, ReorderBuffer ROB);
         void commit_result(Hardware &hw, std::unordered_map<FUType, std::vector<ReservationStation>> &all_reservation_stations, ReorderBuffer &ROB);

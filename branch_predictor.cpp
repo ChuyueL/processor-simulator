@@ -10,6 +10,6 @@ bool BranchPredictor::predict_branch(Hardware &hw, Instruction instr) {
         return true;
     }
 
-    return false;
+    //return false;
 }
 

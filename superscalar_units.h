@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <queue>
 
-#define WIDTH 2
+#define WIDTH 4
 
 class PipelineBuffers {
     public: 
@@ -63,6 +63,8 @@ class SuperscalarCommitUnit {
         std::array<CommitUnit, WIDTH> units;
 
         int committed_instrs = 0;
+        int total_branches = 0;
+        int correctly_predicted_branches = 0;
 
         void commit_results(Hardware &hw, PipelineBuffers &buffers);
 

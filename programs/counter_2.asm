@@ -1,5 +1,5 @@
 addi t0 zero 0
-addi t8 zero 0x14
+addi t8 zero 0x1E
 
 for:
 addi t1 zero 1
