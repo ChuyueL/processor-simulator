@@ -193,12 +193,12 @@ void ALU::perform_ALU_operation(Hardware &hw, Opcode op, int val1, int val2, int
 
 void ALU::execute(Hardware &hw) {
 
-    //std::cout << "current instr at ALU " << std::endl;
+    std::cout << "current instr at ALU " << std::endl;
 
     //std::cout << "FROM RS " << instr_res_stn.number << std::endl;
 
 
-    //print_instruction(instr_res_stn.instr);
+    print_instruction(instr_res_stn.instr);
 
 
     if (instr_res_stn.FU_type == NONE) {
@@ -540,10 +540,10 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
         return;
     }
 
-    // if (rob_head.rs_tag.FU_type != NONE) {
-    //     std::cout << "COMMITTING INSTR \n";
-    //     print_instruction((all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].instr);
-    // }
+    if (rob_head.rs_tag.FU_type != NONE) {
+        std::cout << "COMMITTING INSTR \n";
+        print_instruction((all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].instr);
+    }
 
     
 

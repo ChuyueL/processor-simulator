@@ -5,10 +5,10 @@ void SuperscalarFetchUnit::fetch_instructions(Hardware &hw, std::vector<Instruct
     for (int i = 0; i < WIDTH; i++) {
         if (hw.pc < program.size()) {
             Instruction current_instruction = program[hw.pc];
-            //std::cout << "FETCHed instr \n";
-            //print_instruction(current_instruction);
+            std::cout << "FETCHed instr \n";
+            print_instruction(current_instruction);
             
-            //std::cout << "pc=" << hw.pc << std::endl;
+            std::cout << "pc=" << hw.pc << std::endl;
 
             if (current_instruction.type == B) {
                 if (branch_predictor.predict_branch(hw, current_instruction)) {
@@ -108,9 +108,9 @@ void SuperscalarIssueUnit::issue_instructions(Hardware &hw, PipelineBuffers &buf
     }
 
     for (int i = 0; i < WIDTH; i++) {
-        //std::cout << "current instr at ISSUE " << std::endl;
+        std::cout << "current instr at ISSUE " << std::endl;
         Instruction current_instruction = buffers.instr_queue.front();
-        //print_instruction(current_instruction);
+        print_instruction(current_instruction);
 
         Instruction instr = current_instruction;
         allocate_to_rs(hw, instr, buffers);
@@ -125,8 +125,8 @@ void SuperscalarWriteUnit::write_results(Hardware &hw, PipelineBuffers &buffers)
         }
         ReservationStation res_stn = buffers.completed_instr_res_stns.front();
 
-        //std::cout << "current instr at WRITE " << std::endl;
-        //print_instruction(res_stn.instr);
+        std::cout << "current instr at WRITE " << std::endl;
+        print_instruction(res_stn.instr);
 
         if (res_stn.instr.opcode == COUNT) {
             buffers.completed_instr_res_stns.pop();

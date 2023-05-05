@@ -97,14 +97,14 @@ void SuperscalarOoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> 
     fetch_unit.fetch_instructions(hw, program, pipeline_buffers);
 
 
-    // std::cout << "REGISTERS" << std::endl;
-    // int counter = 0;
-    // for (int reg : hw.reg_file) {
-    //     std::cout << register_to_string(static_cast<Register>(counter)) << "=";
-    //     counter++;
-    //     std::cout << reg << " ";
-    // }
-    // std::cout << std::endl;
+    std::cout << "REGISTERS" << std::endl;
+    int counter = 0;
+    for (int reg : hw.reg_file) {
+        std::cout << register_to_string(static_cast<Register>(counter)) << "=";
+        counter++;
+        std::cout << reg << " ";
+    }
+    std::cout << std::endl;
 
 
     // std::cout << "RAT" << std::endl;
@@ -117,11 +117,11 @@ void SuperscalarOoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> 
     // std::cout << std::endl;
 
 
-    // std::cout << "MEMORY " << std::endl;
-    // for (int entry : hw.memory) {
-    //     std::cout << entry << " ";
-    // }
-    // std::cout << std::endl;
+    std::cout << "MEMORY " << std::endl;
+    for (int entry : hw.memory) {
+        std::cout << entry << " ";
+    }
+    std::cout << std::endl;
 
     // std::cout << "VARIABLE LOCATIONS " << std::endl;
 
