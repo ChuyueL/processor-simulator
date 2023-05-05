@@ -1,27 +1,21 @@
-addi t0 zero .a #load addr of a into t0
-addi t1 zero 0
-addi t8 zero 0x14 #number of loop iterations
+addi t0 zero 0
+addi t8 zero 0x1E
 
 for:
-addi t2 zero 1 #result for addition of a[i] + b[i]
-sw t2 zero 1 #store result into c[i]
+addi t1 zero 1
+addi t2 zero 2
+addi t3 zero 3
+addi t4 zero 4
 
-sw t2 zero 2 #store result into c[i]
+sw t0 zero 0
+sw t0 t1 1
+sw t0 t2 2
+sw t0 t3 3
+sw t0 t4 4
 
-sw t2 zero 3 #store result into c[i]
+addi t0 t0 5
 
-sw t2 zero 4 #store result into c[i]
+blt t0 t8 for
 
-sw t2 zero 5 #store result into c[i]
-
-addi t1 t1 5
-
-blt t1 t8 for # if (i < 10) go round loop again
 halt
 
-
-
-.data:
-
-.a
-0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0

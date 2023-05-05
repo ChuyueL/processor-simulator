@@ -60,7 +60,7 @@ void SuperscalarOoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> 
     commit_unit.committed_instrs = 0;
 
     if (commit_unit.flush) {
-        std::cout << "FLUSHING PIPELINE \n";
+        //std::cout << "FLUSHING PIPELINE \n";
         pipeline_buffers.ROB.flush();
         reset_regs(hw);
         reset_all_res_stns();
@@ -69,7 +69,7 @@ void SuperscalarOoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> 
         return;
     }
 
-    std::cout << "number of completed instrs=" << pipeline_buffers.completed_instr_res_stns.size() << std::endl;
+    //std::cout << "number of completed instrs=" << pipeline_buffers.completed_instr_res_stns.size() << std::endl;
 
     write_unit.write_results(hw, pipeline_buffers);
 

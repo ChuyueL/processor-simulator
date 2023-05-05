@@ -54,7 +54,7 @@ void allocate_to_rs(Hardware &hw, Instruction instr, PipelineBuffers &buffers) {
                 if (!rs.busy && !rs.executing) {
                     //add to RS
                     int rob_index = allocate_rob_entry(buffers.ROB);
-                    std::cout << "ROB_INDEX=" << rob_index << std::endl; 
+                    //std::cout << "ROB_INDEX=" << rob_index << std::endl; 
                     buffers.ROB.buffer[rob_index].opcode = instr.opcode;
 
                     buffers.ROB.buffer[rob_index].destination = instr.rd;
@@ -86,8 +86,8 @@ void allocate_to_rs(Hardware &hw, Instruction instr, PipelineBuffers &buffers) {
                         }
                     }
                     rs.busy = true;
-                    std::cout << "ADDED INSTR TO RS " << rs.number << std::endl;
-                    std::cout << "with RS TYPE " << rs.FU_type << std::endl;
+                    //std::cout << "ADDED INSTR TO RS " << rs.number << std::endl;
+                    //std::cout << "with RS TYPE " << rs.FU_type << std::endl;
 
                     if (instr.type == B) {
                         buffers.ROB.buffer[rob_index].is_branch = true;
@@ -129,7 +129,6 @@ void SuperscalarWriteUnit::write_results(Hardware &hw, PipelineBuffers &buffers)
         print_instruction(res_stn.instr);
 
         if (res_stn.instr.opcode == COUNT) {
-            //continue;
             buffers.completed_instr_res_stns.pop();
             buffers.ROB.buffer[res_stn.ROB_entry].ready = true;
             return;
@@ -138,7 +137,7 @@ void SuperscalarWriteUnit::write_results(Hardware &hw, PipelineBuffers &buffers)
         buffers.ROB.buffer[res_stn.ROB_entry].result = res_stn.instr.result;
 
 
-        std::cout << "SETTING ROB ENTRY READY ENTRY " << res_stn.ROB_entry << std::endl;
+        //std::cout << "SETTING ROB ENTRY READY ENTRY " << res_stn.ROB_entry << std::endl;
         buffers.ROB.buffer[res_stn.ROB_entry].ready = true;
 
 

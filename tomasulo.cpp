@@ -187,15 +187,15 @@ void ALU::perform_ALU_operation(Hardware &hw, Opcode op, int val1, int val2, int
     }
 
     instr_res_stn.instr.result = result;
-    std::cout << "RESULT = " << result << std::endl;
+    //std::cout << "RESULT = " << result << std::endl;
 
 }
 
 void ALU::execute(Hardware &hw) {
 
-    std::cout << "current instr at EXECUTE " << std::endl;
+    std::cout << "current instr at ALU " << std::endl;
 
-    std::cout << "FROM RS " << instr_res_stn.number << std::endl;
+    //std::cout << "FROM RS " << instr_res_stn.number << std::endl;
 
 
     print_instruction(instr_res_stn.instr);
@@ -267,11 +267,11 @@ void LDSTUnit::address_calculation(std::unordered_map<FUType, std::vector<Reserv
 
     switch (op) {
         case LW:
-            std::cout << "BASE REG VALUE " << (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].value1 << std::endl;
-            std::cout << "IMM VALUE " << (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].imm << std::endl;
+            //std::cout << "BASE REG VALUE " << (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].value1 << std::endl;
+            //std::cout << "IMM VALUE " << (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].imm << std::endl;
 
             (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].address = (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].value1 + (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].imm;
-            std::cout << "CALCULATED ADDRESS FOR LOAD " << (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].address << std::endl;
+            //std::cout << "CALCULATED ADDRESS FOR LOAD " << (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].address << std::endl;
             break;
 
         case SW:
@@ -311,7 +311,7 @@ void LDSTUnit::memory_access(Hardware &hw, std::unordered_map<FUType, std::vecto
 
             (all_reservation_stations[LOADSTORE])[instr2_rs_tag.number].instr.result = mem_result;
 
-            std::cout << "ACCESSING MEM " << (all_reservation_stations[LOADSTORE])[instr2_rs_tag.number].address << std::endl;
+            //std::cout << "ACCESSING MEM " << (all_reservation_stations[LOADSTORE])[instr2_rs_tag.number].address << std::endl;
 
             }
             break;
@@ -327,7 +327,7 @@ void LDSTUnit::memory_access(Hardware &hw, std::unordered_map<FUType, std::vecto
 
             (all_reservation_stations[LOADSTORE])[instr2_rs_tag.number].instr.result = mem_result;
 
-            std::cout << "ACCESSING MEM " << (all_reservation_stations[LOADSTORE])[instr2_rs_tag.number].address << std::endl;
+            //std::cout << "ACCESSING MEM " << (all_reservation_stations[LOADSTORE])[instr2_rs_tag.number].address << std::endl;
 
             }
             break;
@@ -420,12 +420,12 @@ void WriteUnit::write_result(Hardware &hw, std::unordered_map<FUType, std::vecto
 }
 
 void commit_store_instr(Hardware &hw, int destination, int result) {
-    std::cout << "STORING TO MEM WITH RESULT " << result << std::endl;
+    //std::cout << "STORING TO MEM WITH RESULT " << result << std::endl;
     hw.memory[destination] = result;
 }
 
 void commit_result_to_ARF(Hardware &hw, int destination, int result) {
-    std::cout << "COMMITTING TO REG " << destination << std::endl;
+    //std::cout << "COMMITTING TO REG " << destination << std::endl;
     hw.reg_file[destination] = result;
 }
 
@@ -533,15 +533,22 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
         return;
     }
 
-    std::cout << "COMMITTING ROB " << ROB.head << std::endl;
     ROBEntry rob_head = ROB.get_front();
 
     if (rob_head.opcode == COUNT) {
         ROB.pop();
         return;
     }
+
+    if (rob_head.rs_tag.FU_type != NONE) {
+        std::cout << "COMMITTING INSTR \n";
+        print_instruction((all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].instr);
+    }
+
+    
+
     if (rob_head.ready) {
-        std::cout << "ROB HEAD READY" << std::endl;
+        //std::cout << "ROB HEAD READY" << std::endl;
 
         committed = true;
         if (rob_head.opcode == HALT) {
@@ -560,12 +567,12 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
             if (!correct) {
                 correct_pc(hw, all_reservation_stations, rob_head);
                 flush = true;
-                std::cout << "MISPREDICTED \n";                
+                //std::cout << "MISPREDICTED \n";                
             }
             else {
                 (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].executing = false;
                 (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].busy = false;
-                std::cout << "CORRECTLY PREDICTED\n";
+                //std::cout << "CORRECTLY PREDICTED\n";
                 branch_predicted_correctly = true;
             }
             ROB.pop();
@@ -584,7 +591,7 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
                 set_dest_valid(hw, rob_head.destination);
             }
 
-            std::cout << "POP ROB" << std::endl;
+            //std::cout << "POP ROB" << std::endl;
             ROB.pop();
 
             (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].executing = false;
@@ -595,7 +602,7 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
         else {
             if (rob_head.opcode == SW && (all_reservation_stations[LOADSTORE])[rob_head.rs_tag.number].tag2 == -1) {
                 int result = (all_reservation_stations[LOADSTORE])[rob_head.rs_tag.number].value2;
-                std::cout << "RESULT=" << result << std::endl;
+                //std::cout << "RESULT=" << result << std::endl;
                 commit_store_instr(hw, rob_head.destination, result);
                 ROB.pop();
                 (all_reservation_stations[rob_head.rs_tag.FU_type])[rob_head.rs_tag.number].executing = false;
@@ -604,7 +611,7 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
 
             }
             else {
-                std::cout << "COULDN'T COMMIT SW" << std::endl;
+                //std::cout << "COULDN'T COMMIT SW" << std::endl;
 
             }
 
