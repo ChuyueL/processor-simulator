@@ -5,7 +5,6 @@
 
 
 void ALU::find_instruction_to_execute(std::vector<ReservationStation> reservation_stations) {
-    //std::cout << "INSTR AT RS 0 " << opcode_to_string(reservation_stations[0].instr.opcode) << std::endl;
     bool halt_instr_exists = false;
     ReservationStation halt_instr_RS = PlaceholderRS(); //force HALT instruction to be executed only if no other instruction can be executed
 
@@ -160,17 +159,14 @@ void ALU::perform_ALU_operation(Hardware &hw, Opcode op, int val1, int val2, int
 
         case SLT:
             if (val1 < val2) {
-                //hw.reg_file[instr.rd] = 1;
                 result = 1;
             }
             else {
-                //hw.reg_file[instr.rd] = 0;
                 result = 0;
             }
             break;
         
         case ADDI:
-            //std::cout << "ADDI imm=" << instr.imm << "\n";
             result = val1 + imm;
             break;
 
@@ -184,16 +180,10 @@ void ALU::perform_ALU_operation(Hardware &hw, Opcode op, int val1, int val2, int
     
 
         case HALT:
-            //hw.finished = true;
             break;
         
         default:
             break;
-    }
-
-    if (op != COUNT) {
-        //std::cout << "alu_output at EX " << result << std::endl;
-
     }
 
     instr_res_stn.instr.result = result;
@@ -215,12 +205,8 @@ void ALU::execute(Hardware &hw) {
         return;
     }
 
-    //update_RAT(hw, instr_res_stn.instr.rd, instr_res_stn.ROB_entry);
-
     perform_ALU_operation(hw, instr_res_stn.instr.opcode, instr_res_stn.value1, instr_res_stn.value2, instr_res_stn.imm);
 
-    
-    //print_cpu_info(instr_res_stn.instr, hw);
 }
 
 int find_load_instr(std::vector<ReservationStation> &reservation_stations, std::deque<LDSTQueue_Entry> &queue) {
@@ -292,7 +278,6 @@ void LDSTUnit::address_calculation(std::unordered_map<FUType, std::vector<Reserv
             {
             int rob_index = (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].ROB_entry;
             ROB.buffer[rob_index].destination = (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].value1 + (all_reservation_stations[LOADSTORE])[instr1_rs_tag.number].imm;
-            //ROB.buffer[rob_index].result = (all_reservation_stations[LOADSTORE])
             }
             break;
 
@@ -399,8 +384,6 @@ void BranchUnit::get_branch_address(Hardware &hw, std::unordered_map<FUType, std
         case BLT:
 
         case BEQ:
-            //int rob_index = (all_reservation_stations[BRANCH])[instr_rs_tag.number].rob_entry;
-            //ROB[rob_index].result = hw.labels[(all_reservation_stations[BRANCH])[instr_rs_tag.instr.label]];
             std::string label = (all_reservation_stations[BRANCH])[instr_rs_tag.number].instr.label;
             (all_reservation_stations[BRANCH])[instr_rs_tag.number].instr.result = hw.labels[label];
             break;
@@ -420,7 +403,6 @@ void WriteUnit::write_result(Hardware &hw, std::unordered_map<FUType, std::vecto
     print_instruction(res_stn.instr);
 
     if (res_stn.instr.opcode == COUNT) {
-        //continue;
         completed_instr_res_stns.pop();
         ROB.buffer[res_stn.ROB_entry].ready = true;
         return;
@@ -428,20 +410,9 @@ void WriteUnit::write_result(Hardware &hw, std::unordered_map<FUType, std::vecto
 
     ROB.buffer[res_stn.ROB_entry].result = res_stn.instr.result;
 
-    // if (res_stn.instr.opcode != SW) {
-
-    //     //ROB.buffer[res_stn.ROB_entry].destination = dest_reg;
-    //     std::cout << "SETTING ROB ENTRY READY ENTRY " << res_stn.ROB_entry << std::endl;
-    //     ROB.buffer[res_stn.ROB_entry].ready = true;
-
-    // }
-
-    //PRETENd evefrytyhing's fine
     std::cout << "SETTING ROB ENTRY READY ENTRY " << res_stn.ROB_entry << std::endl;
     ROB.buffer[res_stn.ROB_entry].ready = true;
 
-
-    //(all_reservation_stations[res_stn.FU_type])[res_stn.number].busy = false;
 
 
     completed_instr_res_stns.pop();
@@ -455,8 +426,6 @@ void commit_store_instr(Hardware &hw, int destination, int result) {
 
 void commit_result_to_ARF(Hardware &hw, int destination, int result) {
     std::cout << "COMMITTING TO REG " << destination << std::endl;
-    //hw.register_alias_table[destination] = -1;
-    //hw.valid[destination] = true;
     hw.reg_file[destination] = result;
 }
 
@@ -481,17 +450,6 @@ void broadcast_result(std::unordered_map<FUType, std::vector<ReservationStation>
 }
 
 bool CommitUnit::check_safe_to_set_valid(Hardware &hw, ReorderBuffer ROB) {
-    // ROBEntry rob_head = ROB.get_front();
-
-    // int destination = rob_head.destination;
-
-    // for (ROBEntry entry : ROB.buffer) {
-    //     if (entry.instr_type == R || entry.instr_type == I) {
-    //         if (entry.destination == destination) {
-    //             return false;
-    //         }
-    //     }
-    // }
 
     ROBEntry rob_head = ROB.get_front();
 
@@ -522,9 +480,7 @@ bool CommitUnit::check_if_branch_correctly_predicted(std::unordered_map<FUType, 
     switch (op) {
         case BLT:
             if (reservation_stations[ROB_entry.rs_tag.number].value1 < reservation_stations[ROB_entry.rs_tag.number].value2) {
-                // hw.pc = ROB_entry.result;
 
-                // ROB.flush();
                 if (!instr.predicted_taken) {
                     return false;
                 }
@@ -542,9 +498,7 @@ bool CommitUnit::check_if_branch_correctly_predicted(std::unordered_map<FUType, 
         
         case BEQ:
             if (reservation_stations[ROB_entry.rs_tag.number].value1 == reservation_stations[ROB_entry.rs_tag.number].value2) {
-                // hw.pc = ROB_entry.result;
 
-                // ROB.flush();
                 if (!instr.predicted_taken) {
                     return false;
 
@@ -568,7 +522,6 @@ void CommitUnit::correct_pc(Hardware &hw, std::unordered_map<FUType, std::vector
 
     if (instr.predicted_taken) {
         hw.pc = instr.prev_pc;
-        //hw.pc = ROB_entry.result;
     }
     else {
         hw.pc = hw.labels[instr.label];
@@ -592,12 +545,6 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
 
         committed = true;
         if (rob_head.opcode == HALT) {
-            // if (ROB.empty()) {
-            //     hw.finished = true;
-            // }
-            // else {
-            //     ROB.pop();
-            // }
 
             hw.finished = true;
             execution_finished = true;
@@ -612,9 +559,6 @@ void CommitUnit::commit_result(Hardware &hw, std::unordered_map<FUType, std::vec
             bool correct = check_if_branch_correctly_predicted(all_reservation_stations, rob_head);
             if (!correct) {
                 correct_pc(hw, all_reservation_stations, rob_head);
-                //hw.pc = rob_head.result;
-                //ROB.flush();
-                //reset_all_res_stns();
                 flush = true;
                 std::cout << "MISPREDICTED \n";                
             }
@@ -686,8 +630,6 @@ void OoOPipeline::reset_regs(Hardware &hw) {
 void OoOPipeline::reset_all_res_stns() {
     for (auto &kvp : all_reservation_stations) {
         for (ReservationStation &rs : kvp.second) {
-            // rs = PlaceholderRS();
-            // rs.FU_type = kvp.first;
             rs.address = 0;
             rs.busy = false;
             rs.executing = false;
@@ -724,8 +666,7 @@ void OoOPipeline::flush_pipeline() {
         branch_unit.current_instruction = PlaceholderInstruction();
         branch_unit.instr_rs_tag = PlaceholderTag();
     }
-    // std::queue<ReservationStation> empty;
-    // std::swap(write_unit.completed_instr_res_stns, empty);
+
 
     write_unit.completed_instr_res_stns = std::queue<ReservationStation>();
 }
@@ -768,10 +709,6 @@ void OoOPipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
     issue_unit.issue_instruction(hw, all_reservation_stations, ldst_queue, ROB);
     
     fetch_unit.fetch(hw, program);
-
-    
-
-    //std::cout << "INSTR AT RS 0 " << opcode_to_string((all_reservation_stations[ARITH])[0].instr.opcode) << std::endl;
 
 
     std::cout << "REGISTERS" << std::endl;
@@ -913,8 +850,6 @@ void OoOPipeline::advance_pipeline(Hardware &hw) {
             
         }
         
-
-        //ldst_unit.find_instruction_to_execute(all_reservation_stations[LOADSTORE]);
 
         ldst_unit.advance_ldst_pipeline();
         

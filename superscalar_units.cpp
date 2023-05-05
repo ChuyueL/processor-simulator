@@ -57,7 +57,6 @@ void allocate_to_rs(Hardware &hw, Instruction instr, PipelineBuffers &buffers) {
                     std::cout << "ROB_INDEX=" << rob_index << std::endl; 
                     buffers.ROB.buffer[rob_index].opcode = instr.opcode;
 
-                    ///NEED TO CHANGE FOR DIFF INSTR TYPES
                     buffers.ROB.buffer[rob_index].destination = instr.rd;
 
                     buffers.ROB.buffer[rob_index].instr_type = instr.type;
@@ -115,71 +114,7 @@ void SuperscalarIssueUnit::issue_instructions(Hardware &hw, PipelineBuffers &buf
 
         Instruction instr = current_instruction;
         allocate_to_rs(hw, instr, buffers);
-        // FUType required_FU = opcode_required_FU(instr.opcode);
 
-        // if (instr.opcode == COUNT) {
-        //     return;
-        // }
-
-        // if (buffers.ROB.full()) {
-        //     return;
-        // }
-
-
-        // for (auto& kvp : buffers.all_reservation_stations) {
-        //     if (kvp.first == required_FU) {
-
-        //         for (ReservationStation& rs : kvp.second) {
-        //             if (!rs.busy && !rs.executing) {
-        //                 //add to RS
-        //                 int rob_index = allocate_rob_entry(buffers.ROB);
-        //                 std::cout << "ROB_INDEX=" << rob_index << std::endl; 
-        //                 buffers.ROB.buffer[rob_index].opcode = instr.opcode;
-
-        //                 ///NEED TO CHANGE FOR DIFF INSTR TYPES
-        //                 buffers.ROB.buffer[rob_index].destination = instr.rd;
-
-        //                 buffers.ROB.buffer[rob_index].instr_type = instr.type;
-
-        //                 if (instr.opcode == HALT) {
-        //                     buffers.ROB.buffer[rob_index].ready = true;
-        //                     break;
-        //                 }
-
-        //                 buffers.ROB.buffer[rob_index].rs_tag = rs.get_tag();
-
-        //                 rs.ROB_entry = rob_index;
-
-
-        //                 rs.add_instruction(hw, instr);
-
-        //                 //update RAT
-        //                 if (instr.type == R || instr.type == I || instr.type == LIDX) {
-        //                     update_RAT(hw, instr.rd, rs.ROB_entry);
-
-        //                 }
-
-        //                 if (required_FU == LOADSTORE) {
-        //                     bool is_store = add_to_ldst_queue(rs, buffers.ldst_queue);
-        //                     if (is_store) {
-        //                         buffers.ROB.buffer[rob_index].is_store_instr = true;
-        //                     }
-        //                 }
-        //                 rs.busy = true;
-        //                 std::cout << "ADDED INSTR TO RS " << rs.number << std::endl;
-        //                 std::cout << "with RS TYPE " << rs.FU_type << std::endl;
-
-        //                 if (instr.type == B) {
-        //                     buffers.ROB.buffer[rob_index].is_branch = true;
-        //                 }
-
-        //                 buffers.instr_queue.pop();
-        //                 break;
-        //             }
-        //         }
-                
-        //     }
-        // }
     }
 }
 
@@ -202,19 +137,9 @@ void SuperscalarWriteUnit::write_results(Hardware &hw, PipelineBuffers &buffers)
 
         buffers.ROB.buffer[res_stn.ROB_entry].result = res_stn.instr.result;
 
-        // if (res_stn.instr.opcode != SW) {
-
-        //     //ROB.buffer[res_stn.ROB_entry].destination = dest_reg;
-        //     std::cout << "SETTING ROB ENTRY READY ENTRY " << res_stn.ROB_entry << std::endl;
-        //     ROB.buffer[res_stn.ROB_entry].ready = true;
-
-        // }
 
         std::cout << "SETTING ROB ENTRY READY ENTRY " << res_stn.ROB_entry << std::endl;
         buffers.ROB.buffer[res_stn.ROB_entry].ready = true;
-
-
-        //(all_reservation_stations[res_stn.FU_type])[res_stn.number].busy = false;
 
 
         buffers.completed_instr_res_stns.pop();

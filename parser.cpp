@@ -228,19 +228,6 @@ std::vector<Instruction> parse_program(std::vector<std::string> lines, Hardware 
             std::cout << "skip" << std::endl;
         }
 
-        //remove leading whitespace
-        // size_t string_start = line.find_first_not_of(' ');
-
-        // if (string_start != std::string::npos) {
-        //     line = line.substr(string_start);
-        // }
-        
-
-
-        // tokens.erase(std::remove_if(tokens.begin(),
-        //                             tokens.end(),
-        //                             [](std::string x) {return x == "";}));
-
         if (tokens[0] == "add" || tokens[0] == "sub" || tokens[0] == "slt" || tokens[0] == "xor") {
             Instruction new_instr = tokens_to_R_instr(tokens);
             program.push_back(new_instr);

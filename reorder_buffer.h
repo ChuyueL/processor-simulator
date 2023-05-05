@@ -35,16 +35,8 @@ class PlaceholderROBEntry : public ROBEntry {
 };
 
 class ReorderBuffer {
-    // ROBEntry head;
-    // ROBEntry tail;
-
-    // void pop();
-
-    // void push();
 
     public:
-        // std::deque<ROBEntry> buffer; 
-
         std::array<ROBEntry, ROB_SIZE> buffer;
 
         int head = 0;

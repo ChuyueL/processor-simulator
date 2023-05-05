@@ -390,75 +390,6 @@ int WritebackUnit::writeback(Instruction instr, Hardware &hw) {
 }
 
 void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
-    // if (!stalled) {
-    //     fetch_unit.fetch(hw, program);
-    //     //decode_unit.next_instruction = fetch_unit.fetch(hw, program);
-    //     decode_unit.next_instruction = fetch_unit.current_instruction;
-
-    //     //decode_unit.decode(decode_unit.current_instruction, hw);
-
-
-    //     bool cont_pipeline = true;
-
-    //     if (decode_unit.current_instruction.opcode != COUNT) {
-    //         cont_pipeline = decode_unit.decode(decode_unit.current_instruction, hw);
-    //     }
-
-    //     if (!cont_pipeline) {
-    //         execute_unit.next_instruction = PlaceholderInstruction();
-    //         stall_pipeline();
-    //     }
-    //     else {
-    //         execute_unit.next_instruction = decode_unit.current_instruction;
-
-    //     }
-    // }
-    // else {
-    //     decode_unit.next_instruction = PlaceholderInstruction();
-    //     execute_unit.next_instruction = PlaceholderInstruction();
-    //     std::cout << "stalled" << std::endl;
-    // }
-
-    // writeback_unit.next_instruction = memory_unit.current_instruction;
-    // writeback_unit.alu_output = memory_unit.alu_output;
-    // writeback_unit.load_mem_data = memory_unit.result;
-
-        
-    // memory_unit.alu_output = execute_unit.result;
-
-
-    // memory_unit.next_instruction = execute_unit.current_instruction;
-
-    // //execute_unit.next_instruction = fetch_unit.fetch(hw, program);
-
-    // if (execute_unit.current_instruction.opcode != COUNT) {
-    //     execute_unit.execute(execute_unit.current_instruction, hw);
-    // }
-
-
-    // if (memory_unit.current_instruction.opcode == BEQ || memory_unit.current_instruction.opcode == BLT) { ///move to MEM
-    //     flush_pipeline(hw, 3);
-    //     memory_unit.memory_stage(memory_unit.current_instruction, hw);
-    // }
-    // else if (memory_unit.current_instruction.opcode != COUNT) {
-    //     memory_unit.memory_stage(memory_unit.current_instruction, hw);
-    // }
-
-    // if (writeback_unit.current_instruction.opcode == HALT) {
-    //     flush_pipeline(hw, 4);
-    //     writeback_unit.writeback(writeback_unit.current_instruction, hw);
-    // }
-    // else if (writeback_unit.current_instruction.opcode != COUNT) {
-    //     writeback_unit.writeback(writeback_unit.current_instruction, hw);
-    // }
-
-
-    // if (stalled) {
-    //     //check if can unstall
-    //     if (!check_for_dependency(decode_unit.current_instruction, hw)) {
-    //         continue_pipeline();
-    //     }
-    // }
 
     if (writeback_unit.current_instruction.opcode != COUNT) {
         instructions_executed++;
@@ -507,59 +438,14 @@ void Pipeline::clock_cycle(Hardware &hw, std::vector<Instruction> program) {
         //execute_unit.next_instruction = PlaceholderInstruction();
         std::cout << "STALLED" << std::endl;
     }
-
-    //execute_unit.execute(execute_unit.current_instruction, hw);      
-
-
-
-    // if (memory_unit.current_instruction.opcode == BEQ || memory_unit.current_instruction.opcode == BLT) { ///move to MEM
-    //     flush_pipeline(hw, 3);
-
-    //     memory_unit.memory_stage(memory_unit.current_instruction, hw);
-    // }
-    // else {
-    //     memory_unit.memory_stage(memory_unit.current_instruction, hw);
-    // }
     
 }
 
 void Pipeline::advance_pipeline(Hardware &hw) {
-    // writeback_unit.current_instruction = writeback_unit.next_instruction;
-    // memory_unit.current_instruction = memory_unit.next_instruction;
-    // execute_unit.current_instruction = execute_unit.next_instruction;
-    // decode_unit.current_instruction = decode_unit.next_instruction;
-    // fetch_unit.current_instruction = fetch_unit.next_instruction;
-
-    // Instruction temp_decode_next_instr = decode_unit.next_instruction;
-    // Instruction temp_exec_next_instr = execute_unit.next_instruction;
-    // Instruction temp_mem_next_instr = memory_unit.next_instruction;
-    // Instruction temp_wb_next_instr = writeback_unit.next_instruction;
-
-    // if (!stalled) {
-    //     decode_unit.next_instruction = fetch_unit.current_instruction;
-    //     execute_unit.next_instruction = decode_unit.current_instruction;
-    // }
-    // else {
-    //     execute_unit.next_instruction = PlaceholderInstruction();
-    //     execute_unit.result = 0;
-    // }
- 
-    // memory_unit.next_instruction = execute_unit.current_instruction;
-    // writeback_unit.next_instruction = memory_unit.current_instruction;
 
     writeback_unit.alu_output = memory_unit.alu_output;
     writeback_unit.load_mem_data = memory_unit.result;
     memory_unit.alu_output = execute_unit.result;
-
-
-    // if (!stalled) {
-    //     fetch_unit.current_instruction = fetch_unit.next_instruction;
-    //     decode_unit.current_instruction = temp_decode_next_instr;
-    // }
-
-    // execute_unit.current_instruction = temp_exec_next_instr;
-    // memory_unit.current_instruction = temp_mem_next_instr;
-    // writeback_unit.current_instruction = temp_wb_next_instr;
 
     
     writeback_unit.current_instruction = memory_unit.current_instruction;
@@ -576,22 +462,7 @@ void Pipeline::advance_pipeline(Hardware &hw) {
 
         //decode_unit.current_instruction = PlaceholderInstruction();
     }
-    
-    // Instruction instr = execute_unit.current_instruction;
-    // if (instr.opcode != COUNT && instr.opcode != HALT) {
-    //     update_scoreboard(instr, hw);
-    // }
 
-    // instr = memory_unit.current_instruction;
-    // if (instr.opcode != COUNT && instr.opcode != HALT) {
-    //     update_scoreboard(instr, hw);
-    // }
-
-    // instr = writeback_unit.current_instruction;
-
-    // if (instr.opcode != COUNT && instr.opcode != HALT) {
-    //     update_scoreboard(instr, hw);
-    // }
 
     update_scoreboard(hw);
   

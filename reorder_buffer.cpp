@@ -13,7 +13,6 @@ void ROBEntry::reclaim() {
 }
 
 void ReorderBuffer::pop() {
-    //buffer.pop_front();
     buffer[head].reclaim();
 
     head = (head + 1) % ROB_SIZE;
@@ -23,9 +22,7 @@ void ReorderBuffer::pop() {
 int ReorderBuffer::push(ROBEntry newEntry) {
     if (!full())
     {
-        //buffer.push_back(newEntry);
         buffer[tail] = newEntry;
-        //int index = tail;
         int index = tail;
 
         tail = (tail + 1) % ROB_SIZE;
